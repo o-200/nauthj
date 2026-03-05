@@ -15,9 +15,14 @@ export class UsersService {
     return this.userRepository.find();
   }
 
+  findById(userId: string) {
+    return this.userRepository.findOne({ where: { id: userId } });
+  }
+
   findByEmail(email: string) {
     return this.userRepository.findOne({ where: { email } });
   }
+
 
   create(createUserDto: CreateUserDto) {
     const user = this.userRepository.create(createUserDto);
