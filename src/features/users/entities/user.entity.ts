@@ -19,4 +19,7 @@ export class User {
 
   @Column("varchar", { length: 1000 })
   description: string
+
+  @Column({ type: 'text', nullable: true })
+  refreshToken: string
 }
