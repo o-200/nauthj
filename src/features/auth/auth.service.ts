@@ -7,6 +7,7 @@ import { CreateUserDto } from 'src/features/users/dto/create-user.dto';
 import { UsersService } from 'src/features/users/users.service';
 import { jwtTokenDto } from './dto/jwt-token.dto';
 import { UserResponseDto } from '../users/dto/user-response.dto';
+import { SignInDto } from './dto/sign-in.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +29,23 @@ export class AuthService {
 
     const tokens = await this.getTokens(createdUser.id, user.email);
     await this.updateRefreshToken(createdUser.id, tokens.refreshToken);
+
+    return tokens;
+  }
+
+  async signIn(signInDto: SignInDto): Promise<jwtTokenDto> {
+    const user = await this.userService.findByLogin(signInDto.login);
+    if (!user) {
+      throw new BadRequestException('User doesnt exists!');
+    }
+
+    const isMatch = await bcrypt.compare(signInDto.password, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Login or password is incorrect!');
+    }
+
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
 
     return tokens;
   }
@@ -67,18 +85,4 @@ export class AuthService {
   encrypt(data: string): string {
     return bcrypt.hash(data, 10)
   }
-
-  // async signIn(
-  //   username: string,
-  //   pass: string,
-  // ): Promise<{ access_token: string }> {
-  //   const user = await this.usersService.findOne(username);
-  //   if (user?.password !== pass) {
-  //     throw new UnauthorizedException();
-  //   }
-  //   const payload = { sub: user.userId, username: user.username };
-  //   return {
-  //     access_token: await this.jwtService.signAsync(payload),
-  //   };
-  // }
 }
