@@ -1,8 +1,8 @@
 import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/features/users/dto/create-user.dto';
-import { AuthGuard } from './auth.guard';
-import { SignInDto } from './dto/sign-in.dto';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { LocalAuthGuard } from './local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -14,15 +14,17 @@ export class AuthController {
   }
 
   @Post('sign_in')
+  @UseGuards(LocalAuthGuard)
   @HttpCode(200)
-  login(@Body() signInDto: SignInDto) {
-    return this.authService.signIn(signInDto);
+  login(@Req() req) {
+    const user = req.user;
+    return this.authService.signIn(user.id, user.email);
   }
 
   @Get('me')
-  @UseGuards(AuthGuard)
-  me(@Req() req: Request) {
-    const userId = (req as any).user['sub'];
+  @UseGuards(JwtAuthGuard)
+  me(@Req() req) {
+    const userId = req.user["userId"];
     return this.authService.getMe(userId);
   }
 }

@@ -1,12 +1,11 @@
 
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/features/users/entities/user.entity';
 import { CreateUserDto } from 'src/features/users/dto/create-user.dto';
 import { UsersService } from 'src/features/users/users.service';
 import { jwtTokenDto } from './dto/jwt-token.dto';
-import { UserResponseDto } from '../users/dto/user-response.dto';
 import { SignInDto } from './dto/sign-in.dto';
 
 @Injectable()
@@ -28,36 +27,25 @@ export class AuthService {
     const createdUser: User = await this.userService.create(newUser);
 
     const tokens = await this.getTokens(createdUser.id, user.email);
-    await this.updateRefreshToken(createdUser.id, tokens.refreshToken);
 
     return tokens;
   }
 
-  async signIn(signInDto: SignInDto): Promise<jwtTokenDto> {
-    const user = await this.userService.findByLogin(signInDto.login);
-    if (!user) {
-      throw new BadRequestException('User doesnt exists!');
-    }
-
-    const isMatch = await bcrypt.compare(signInDto.password, user.password);
-    if (!isMatch) {
-      throw new BadRequestException('Login or password is incorrect!');
-    }
-
-    const tokens = await this.getTokens(user.id, user.email);
-    await this.updateRefreshToken(user.id, tokens.refreshToken);
+  async signIn(id: string, email: string): Promise<jwtTokenDto> {
+    const tokens = await this.getTokens(id, email);
+    await this.updateRefreshToken(id, tokens.refreshToken);
 
     return tokens;
   }
 
-  async getMe(userId: string) {
+  async getMe(userId: string): Promise<User> {
     const user = await this.userService.findById(userId);
 
     if (!user) {
       throw new NotFoundException();
     }
 
-    return new UserResponseDto(user);
+    return user;
   }
 
   async updateRefreshToken(userId: string, refreshToken: string) {
@@ -80,6 +68,21 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async validateUser(signInDto: SignInDto): Promise<User | null> {
+    const user = await this.userService.findByLogin(signInDto.login);
+
+    if (!user) {
+      return null;
+    }
+
+    const isMatch = await bcrypt.compare(signInDto.password, user.password);
+    if (!isMatch) {
+      return null;
+    }
+
+    return user;
   }
 
   encrypt(data: string): string {
