@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { PaginationDto } from './dto/pagination.dto';
+import { SearchFilterDto } from './dto/search-filter.dto';
 
 @Injectable()
 export class UsersService {
@@ -12,17 +13,23 @@ export class UsersService {
     private userRepository: Repository<User>,
   ) { }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { cursor, limit = 10 } = paginationDto;
+  async findAll(paginationDto: PaginationDto, searchFilterDto: SearchFilterDto) {
+    const { createdAt, limit = 10 } = paginationDto;
 
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
       .orderBy('user.createdAt', 'DESC')
       .limit(limit + 1);
 
-    if (cursor) {
-      queryBuilder.where('user.createdAt < :cursor', { cursor: new Date(cursor), });
+    if (searchFilterDto.login) {
+      queryBuilder.andWhere('user.login = :login', { login: searchFilterDto.login });
     }
+
+    if (createdAt) {
+      queryBuilder.andWhere('user.createdAt < :cursor', { cursor: new Date(createdAt), });
+    }
+
+    console.log(queryBuilder.getQueryAndParameters());
 
     const users = await queryBuilder.getMany();
     const hasNextPage = users.length > limit;

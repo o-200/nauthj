@@ -4,7 +4,7 @@ import { Transform } from 'class-transformer';
 export class PaginationDto {
   @IsOptional()
   @IsDateString()
-  cursor?: string;
+  createdAt?: string;
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
