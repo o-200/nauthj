@@ -3,7 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { FeaturesModule } from './features/features.module';
 import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from './features/auth/auth.module';
+import { JwtStrategy } from './features/auth/jwt.strategy';
+import { LocalStrategy } from './features/auth/local.strategy';
 
 @Module({
   imports: [
@@ -11,7 +12,6 @@ import { AuthModule } from './features/auth/auth.module';
       isGlobal: true,
     }),
     FeaturesModule,
-    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

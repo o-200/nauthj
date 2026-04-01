@@ -1,4 +1,11 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from "typeorm";
 
 @Entity()
 export class User {
@@ -7,21 +14,27 @@ export class User {
 
   @Column({ length: 64 })
   @Index({ unique: true })
-  login: string
+  login: string;
 
   @Column({ length: 64 })
   @Index({ unique: true })
-  email: string
+  email: string;
 
   @Column({ length: 64 })
-  password: string
+  password: string;
 
   @Column("int")
-  age: number
+  age: number;
 
   @Column("varchar", { length: 1000 })
-  description: string
+  description: string;
 
   @Column({ type: 'text', nullable: true })
-  refreshToken: string
+  refreshToken: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

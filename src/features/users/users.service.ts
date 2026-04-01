@@ -3,6 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { PaginationDto } from './dto/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -11,8 +12,33 @@ export class UsersService {
     private userRepository: Repository<User>,
   ) { }
 
-  findAll() {
-    return this.userRepository.find();
+  async findAll(paginationDto: PaginationDto) {
+    const { cursor, limit = 10 } = paginationDto;
+
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .orderBy('user.createdAt', 'DESC')
+      .limit(limit + 1);
+
+    if (cursor) {
+      queryBuilder.where('user.createdAt < :cursor', { cursor: new Date(cursor), });
+    }
+
+    const users = await queryBuilder.getMany();
+    const hasNextPage = users.length > limit;
+
+    if (hasNextPage) {
+      users.pop();
+    }
+
+    console.log(users)
+
+    const lastUser = users[users.length - 1];
+
+    return {
+      data: users,
+      nextCursor: hasNextPage && lastUser ? lastUser.createdAt : null,
+    };
   }
 
   findById(userId: string) {
