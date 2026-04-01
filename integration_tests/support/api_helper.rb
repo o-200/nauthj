@@ -67,4 +67,11 @@ module ApiHelper
       req.headers["Authorization"] = "Bearer #{token}"
     end
   end
+
+  def get_users(params = {}, headers = {})
+    connection.get("/users") do |req|
+      req.headers["Authorization"] = "Bearer #{headers[:token]}"
+      req.params = params
+    end
+  end
 end
