@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PaginationDto } from './dto/pagination.dto';
@@ -19,18 +19,17 @@ export class UsersController {
     return this.usersService.findAll(paginationDto, searchFilterDto);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.usersService.findOne(+id);
-  // }
-
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
   //   return this.usersService.update(+id, updateUserDto);
   // }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.usersService.remove(+id);
-  // }
+  @Delete('me')
+  @UseGuards(JwtAuthGuard)
+  remove(@Req() req) {
+    const userId = req.user["userId"];
+    this.usersService.delete(userId);
+
+    return { "message": "User was deleted" };
+  }
 }

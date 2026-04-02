@@ -60,10 +60,13 @@ export class UsersService {
     return this.userRepository.findOne({ where: { email } });
   }
 
-
   create(createUserDto: CreateUserDto) {
     const user = this.userRepository.create(createUserDto);
     return this.userRepository.save(user)
+  }
+
+  delete(userId: string) {
+    return this.userRepository.softDelete(userId);
   }
 
   update(userId: string, updateUserDto: UpdateUserDto) {

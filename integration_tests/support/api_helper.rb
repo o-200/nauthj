@@ -74,4 +74,10 @@ module ApiHelper
       req.params = params
     end
   end
+
+  def delete_me(token)
+    connection.delete("/users/me") do |req|
+      req.headers["Authorization"] = "Bearer #{token}"
+    end
+  end
 end
