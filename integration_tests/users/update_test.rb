@@ -16,15 +16,15 @@ class IndexTest < Minitest::Test
     # register done
 
     payload_update = _payload.clone
-    payload_update["login"] = SecureRandom.hex
+    payload_update[:login] = SecureRandom.hex
 
     update_req = update_me(token, payload_update)
     body = JSON.parse(update_req.body)
 
     assert_equal 200, update_req.status
 
-    me_req = get_me(token)
-    assert_equal payload_update, me_req.body
+    me_req_body = JSON.parse(get_me(token).body).transform_keys(&:to_sym)
+    assert_equal payload_update[:login], me_req_body[:login]
   end
 
   private
