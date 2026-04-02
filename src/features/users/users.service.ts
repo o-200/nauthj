@@ -69,7 +69,8 @@ export class UsersService {
     return this.userRepository.softDelete(userId);
   }
 
-  update(userId: string, updateUserDto: UpdateUserDto) {
+  async update(userId: string, updateUserDto: UpdateUserDto) {
     this.userRepository.update(userId, updateUserDto);
+    return await this.userRepository.findOne({ where: { id: userId } });
   }
 }

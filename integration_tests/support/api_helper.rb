@@ -80,4 +80,11 @@ module ApiHelper
       req.headers["Authorization"] = "Bearer #{token}"
     end
   end
+
+  def update_me(token, payload)
+    connection.patch("/users/me") do |req|
+      req.headers["Authorization"] = "Bearer #{token}"
+      req.body = JSON.generate(payload)
+    end
+  end
 end

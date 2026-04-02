@@ -22,7 +22,6 @@ class IndexTest < Minitest::Test
     assert_kind_of Array, users
     refute_empty users
 
-    # 4. проверка структуры пользователя
     user = users.first
 
     expected_keys = %w[

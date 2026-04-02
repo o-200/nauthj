@@ -1,8 +1,9 @@
-import { Controller, Delete, Get, HttpCode, Param, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PaginationDto } from './dto/pagination.dto';
 import { SearchFilterDto } from './dto/search-filter.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -19,16 +20,22 @@ export class UsersController {
     return this.usersService.findAll(paginationDto, searchFilterDto);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.usersService.update(+id, updateUserDto);
-  // }
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Req() req,
+    @Body() updateUserDto: UpdateUserDto
+  ) {
+    const userId = req.user["userId"];
+
+    return this.usersService.update(userId, updateUserDto);
+  }
 
   @Delete('me')
   @UseGuards(JwtAuthGuard)
-  remove(@Req() req) {
+  async remove(@Req() req) {
     const userId = req.user["userId"];
-    this.usersService.delete(userId);
+    await this.usersService.delete(userId);
 
     return { "message": "User was deleted" };
   }
