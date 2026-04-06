@@ -1,5 +1,5 @@
 
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/features/users/entities/user.entity';
@@ -88,7 +88,7 @@ export class AuthService {
     return user;
   }
 
-  encrypt(data: string): string {
+  encrypt(data: string): Promise<string> {
     return bcrypt.hash(data, 10)
   }
 }
