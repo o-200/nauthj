@@ -13,8 +13,8 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/features/users/dto/create-user.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
-import { SignInDto } from './dto/sign-in.dto';
 import { jwtTokenDto } from './dto/jwt-token.dto';
+import { UpdateUserDto } from '../users/dto/update-user.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -41,7 +41,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @HttpCode(200)
   @ApiOperation({ summary: 'Sign in user' })
-  @ApiBody({ type: SignInDto })
+  @ApiBody({ type: UpdateUserDto })
   @ApiResponse({
     status: 200,
     description: 'User successfully signed in',
@@ -58,7 +58,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get current authenticated user' })
   @ApiResponse({
     status: 200,

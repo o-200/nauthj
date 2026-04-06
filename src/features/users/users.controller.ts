@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -31,6 +32,7 @@ export class UsersController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get users list with pagination and filters' })
+  @ApiBearerAuth('access-token')
   @ApiResponse({
     status: 200,
     description: 'Users list',
@@ -45,14 +47,16 @@ export class UsersController {
 
   @Patch('me')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Update current user' })
   @ApiResponse({
     status: 200,
     description: 'User updated',
     type: User,
   })
+  @ApiBody({ type: UpdateUserDto })
   update(
-    @Req() req, 
+    @Req() req,
     @Body() updateUserDto: UpdateUserDto
   ) {
     const userId = req.user['userId'];
@@ -61,6 +65,7 @@ export class UsersController {
 
   @Delete('me')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Delete current user' })
   @ApiResponse({
     status: 200,

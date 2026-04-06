@@ -4,7 +4,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 export class SearchFilterDto {
   @ApiPropertyOptional({
     example: 'alex123',
-    description: 'Filter users by login (exact match)',
+    description: 'Filter users by login (%ILIKE% match)',
     maxLength: 64,
   })
   @IsOptional()

@@ -1,10 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { PaginationDto } from './dto/pagination.dto';
 import { SearchFilterDto } from './dto/search-filter.dto';
+import { RefreshTokenDto } from '../auth/dto/refresh-token.dto';
 
 @Injectable()
 export class UsersService {
@@ -22,14 +23,12 @@ export class UsersService {
       .limit(limit + 1);
 
     if (searchFilterDto.login) {
-      queryBuilder.andWhere('user.login = :login', { login: searchFilterDto.login });
+      queryBuilder.andWhere('user.login ILIKE :login', { login: `%${searchFilterDto.login}%` });
     }
 
     if (createdAt) {
       queryBuilder.andWhere('user.createdAt < :cursor', { cursor: new Date(createdAt), });
     }
-
-    console.log(queryBuilder.getQueryAndParameters());
 
     const users = await queryBuilder.getMany();
     const hasNextPage = users.length > limit;
@@ -69,8 +68,31 @@ export class UsersService {
     return this.userRepository.softDelete(userId);
   }
 
-  async update(userId: string, updateUserDto: UpdateUserDto) {
-    this.userRepository.update(userId, updateUserDto);
-    return await this.userRepository.findOne({ where: { id: userId } });
+  async update(userId: string, updateUserDto: UpdateUserDto | RefreshTokenDto) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const changedFields: Partial<User> = {};
+
+    for (const [key, value] of Object.entries(updateUserDto)) {
+      if (value !== undefined && user[key] !== value) {
+        changedFields[key] = value;
+      }
+    }
+
+    if (Object.keys(changedFields).length === 0) {
+      return user;
+    }
+
+    await this.userRepository.update(userId, changedFields);
+
+    return this.userRepository.findOne({
+      where: { id: userId },
+    });
   }
 }
