@@ -27,6 +27,9 @@ export class AuthService {
     const createdUser: User = await this.userService.create(newUser);
 
     const tokens = await this.getTokens(createdUser.id, user.email);
+    const hashedRefreshToken = await this.encrypt(tokens["refreshToken"]);
+
+    await this.userService.update(createdUser.id, { refreshToken: hashedRefreshToken })
 
     return tokens;
   }
