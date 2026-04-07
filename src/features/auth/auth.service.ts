@@ -21,13 +21,13 @@ export class AuthService {
       throw new BadRequestException('email already exists');
     }
 
-    const hashedPassword = await this.encrypt(user.password);
+    const hashedPassword = await this.hash(user.password);
 
     const newUser: CreateUserDto = { ...user, password: hashedPassword };
     const createdUser: User = await this.userService.create(newUser);
 
     const tokens = await this.getTokens(createdUser.id, user.email);
-    const hashedRefreshToken = await this.encrypt(tokens["refreshToken"]);
+    const hashedRefreshToken = await this.hash(tokens["refreshToken"]);
 
     await this.userService.update(createdUser.id, { refreshToken: hashedRefreshToken })
 
@@ -52,7 +52,7 @@ export class AuthService {
   }
 
   async updateRefreshToken(userId: string, refreshToken: string) {
-    const hashedRefreshToken = await this.encrypt(refreshToken);
+    const hashedRefreshToken = await this.hash(refreshToken);
     await this.userService.update(userId, {
       refreshToken: hashedRefreshToken,
     });
@@ -88,7 +88,7 @@ export class AuthService {
     return user;
   }
 
-  encrypt(data: string): Promise<string> {
+  hash(data: string): Promise<string> {
     return bcrypt.hash(data, 10)
   }
 }

@@ -99,7 +99,7 @@ describe('AuthService', () => {
         description: 'hello',
       };
 
-      jest.spyOn(service, 'encrypt')
+      jest.spyOn(service, 'hash')
         .mockResolvedValueOnce('hashed-password')
         .mockResolvedValueOnce('hashed-refresh-token');
 
@@ -177,12 +177,12 @@ describe('AuthService', () => {
 
   describe('updateRefreshToken', () => {
     it('should hash refresh token and update user', async () => {
-      jest.spyOn(service, 'encrypt').mockResolvedValue('hashed-refresh-token');
+      jest.spyOn(service, 'hash').mockResolvedValue('hashed-refresh-token');
       userService.update.mockResolvedValue(undefined);
 
       await service.updateRefreshToken('user-1', 'plain-refresh-token');
 
-      expect(service.encrypt).toHaveBeenCalledWith('plain-refresh-token');
+      expect(service.hash).toHaveBeenCalledWith('plain-refresh-token');
       expect(userService.update).toHaveBeenCalledWith('user-1', {
         refreshToken: 'hashed-refresh-token',
       });
