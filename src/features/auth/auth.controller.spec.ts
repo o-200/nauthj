@@ -49,7 +49,10 @@ describe('AuthController', () => {
         description: 'hello',
       };
 
-      const tokens = { accessToken: 'access-token', refreshToken: 'refresh-token' };
+      const tokens = {
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+      };
 
       authService.register.mockResolvedValue(tokens);
       const result = await controller.register(createUserDto);

@@ -1,14 +1,54 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import {
+  DeleteResult,
+  Repository,
+  SelectQueryBuilder,
+  UpdateResult,
+} from 'typeorm';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+
+type MockUserRepository = Pick<
+  Repository<User>,
+  'createQueryBuilder' | 'findOne' | 'create' | 'save' | 'softDelete' | 'update'
+>;
+
+type MockQueryBuilder = Pick<
+  SelectQueryBuilder<User>,
+  'orderBy' | 'limit' | 'andWhere' | 'getMany'
+>;
+
+const createMockQueryBuilder = (
+  users: User[],
+): jest.Mocked<MockQueryBuilder> => {
+  const queryBuilder: jest.Mocked<MockQueryBuilder> = {
+    orderBy: jest.fn(),
+    limit: jest.fn(),
+    andWhere: jest.fn(),
+    getMany: jest.fn(),
+  };
+
+  queryBuilder.orderBy.mockReturnValue(
+    queryBuilder as unknown as SelectQueryBuilder<User>,
+  );
+  queryBuilder.limit.mockReturnValue(
+    queryBuilder as unknown as SelectQueryBuilder<User>,
+  );
+  queryBuilder.andWhere.mockReturnValue(
+    queryBuilder as unknown as SelectQueryBuilder<User>,
+  );
+  queryBuilder.getMany.mockResolvedValue(users);
+
+  return queryBuilder;
+};
 
 describe('UsersService', () => {
   let service: UsersService;
-  let userRepository: jest.Mocked<Repository<User>>;
+  let userRepository: jest.Mocked<MockUserRepository>;
 
-  const mockUserRepository = {
+  const mockUserRepository: jest.Mocked<MockUserRepository> = {
     createQueryBuilder: jest.fn(),
     findOne: jest.fn(),
     create: jest.fn(),
@@ -29,7 +69,8 @@ describe('UsersService', () => {
     }).compile();
 
     service = module.get<UsersService>(UsersService);
-    userRepository = module.get('USER_REPOSITORY');
+    userRepository =
+      module.get<jest.Mocked<MockUserRepository>>('USER_REPOSITORY');
 
     jest.clearAllMocks();
   });
@@ -54,14 +95,11 @@ describe('UsersService', () => {
         createdAt: new Date('2026-04-06T08:00:00.000Z'),
       } as User;
 
-      const queryBuilder = {
-        orderBy: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue([user1, user2, user3]),
-      };
+      const queryBuilder = createMockQueryBuilder([user1, user2, user3]);
 
-      userRepository.createQueryBuilder.mockReturnValue(queryBuilder as any);
+      userRepository.createQueryBuilder.mockReturnValue(
+        queryBuilder as unknown as SelectQueryBuilder<User>,
+      );
 
       const result = await service.findAll(
         { limit: 2, createdAt: undefined },
@@ -69,7 +107,10 @@ describe('UsersService', () => {
       );
 
       expect(userRepository.createQueryBuilder).toHaveBeenCalledWith('user');
-      expect(queryBuilder.orderBy).toHaveBeenCalledWith('user.createdAt', 'DESC');
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith(
+        'user.createdAt',
+        'DESC',
+      );
       expect(queryBuilder.limit).toHaveBeenCalledWith(3);
 
       expect(result).toEqual({
@@ -85,14 +126,11 @@ describe('UsersService', () => {
         createdAt: new Date('2026-04-06T10:00:00.000Z'),
       } as User;
 
-      const queryBuilder = {
-        orderBy: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue([user1]),
-      };
+      const queryBuilder = createMockQueryBuilder([user1]);
 
-      userRepository.createQueryBuilder.mockReturnValue(queryBuilder as any);
+      userRepository.createQueryBuilder.mockReturnValue(
+        queryBuilder as unknown as SelectQueryBuilder<User>,
+      );
 
       const result = await service.findAll(
         { limit: 2, createdAt: undefined },
@@ -106,14 +144,11 @@ describe('UsersService', () => {
     });
 
     it('should add login filter when login is provided', async () => {
-      const queryBuilder = {
-        orderBy: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue([]),
-      };
+      const queryBuilder = createMockQueryBuilder([]);
 
-      userRepository.createQueryBuilder.mockReturnValue(queryBuilder as any);
+      userRepository.createQueryBuilder.mockReturnValue(
+        queryBuilder as unknown as SelectQueryBuilder<User>,
+      );
 
       await service.findAll(
         { limit: 10, createdAt: undefined },
@@ -128,20 +163,13 @@ describe('UsersService', () => {
 
     it('should add createdAt cursor filter when createdAt is provided', async () => {
       const createdAt = new Date('2026-04-06T10:00:00.000Z');
+      const queryBuilder = createMockQueryBuilder([]);
 
-      const queryBuilder = {
-        orderBy: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue([]),
-      };
-
-      userRepository.createQueryBuilder.mockReturnValue(queryBuilder as any);
-
-      await service.findAll(
-        { limit: 10, createdAt },
-        { login: undefined },
+      userRepository.createQueryBuilder.mockReturnValue(
+        queryBuilder as unknown as SelectQueryBuilder<User>,
       );
+
+      await service.findAll({ limit: 10, createdAt }, { login: undefined });
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
         'user.createdAt < :cursor',
@@ -194,10 +222,12 @@ describe('UsersService', () => {
 
   describe('create', () => {
     it('should create and save user', async () => {
-      const dto = {
+      const dto: CreateUserDto = {
         login: 'alex',
         email: 'alex@example.com',
         password: '123456',
+        age: 20,
+        description: 'test user',
       };
 
       const createdUser = { ...dto } as User;
@@ -206,7 +236,7 @@ describe('UsersService', () => {
       userRepository.create.mockReturnValue(createdUser);
       userRepository.save.mockResolvedValue(savedUser);
 
-      const result = await service.create(dto as any);
+      const result = await service.create(dto);
 
       expect(userRepository.create).toHaveBeenCalledWith(dto);
       expect(userRepository.save).toHaveBeenCalledWith(createdUser);
@@ -216,12 +246,17 @@ describe('UsersService', () => {
 
   describe('delete', () => {
     it('should soft delete user', async () => {
-      userRepository.softDelete.mockResolvedValue({ affected: 1 } as any);
+      const deleteResult: DeleteResult = {
+        raw: [],
+        affected: 1,
+      };
+
+      userRepository.softDelete.mockResolvedValue(deleteResult);
 
       const result = await service.delete('1');
 
       expect(userRepository.softDelete).toHaveBeenCalledWith('1');
-      expect(result).toEqual({ affected: 1 });
+      expect(result).toEqual(deleteResult);
     });
   });
 
@@ -229,9 +264,9 @@ describe('UsersService', () => {
     it('should throw NotFoundException when user does not exist', async () => {
       userRepository.findOne.mockResolvedValueOnce(null);
 
-      await expect(
-        service.update('1', { login: 'new-login' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.update('1', { login: 'new-login' })).rejects.toThrow(
+        NotFoundException,
+      );
 
       expect(userRepository.update).not.toHaveBeenCalled();
     });
@@ -267,11 +302,17 @@ describe('UsersService', () => {
         login: 'alex-new',
       } as User;
 
+      const updateResult: UpdateResult = {
+        raw: [],
+        affected: 1,
+        generatedMaps: [],
+      };
+
       userRepository.findOne
         .mockResolvedValueOnce(existingUser)
         .mockResolvedValueOnce(updatedUser);
 
-      userRepository.update.mockResolvedValue({ affected: 1 } as any);
+      userRepository.update.mockResolvedValue(updateResult);
 
       const result = await service.update('1', {
         login: 'alex-new',
@@ -301,11 +342,17 @@ describe('UsersService', () => {
         refreshToken: 'new-token',
       } as User;
 
+      const updateResult: UpdateResult = {
+        raw: [],
+        affected: 1,
+        generatedMaps: [],
+      };
+
       userRepository.findOne
         .mockResolvedValueOnce(existingUser)
         .mockResolvedValueOnce(updatedUser);
 
-      userRepository.update.mockResolvedValue({ affected: 1 } as any);
+      userRepository.update.mockResolvedValue(updateResult);
 
       const result = await service.update('1', {
         refreshToken: 'new-token',

@@ -1,5 +1,8 @@
-
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/features/users/entities/user.entity';
@@ -12,8 +15,8 @@ import { SignInDto } from './dto/sign-in.dto';
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly userService: UsersService
-  ) { }
+    private readonly userService: UsersService,
+  ) {}
 
   async register(user: CreateUserDto): Promise<jwtTokenDto> {
     const existingUser = await this.userService.findByEmail(user.email);
@@ -27,9 +30,11 @@ export class AuthService {
     const createdUser: User = await this.userService.create(newUser);
 
     const tokens = await this.getTokens(createdUser.id, user.email);
-    const hashedRefreshToken = await this.hash(tokens["refreshToken"]);
+    const hashedRefreshToken = await this.hash(tokens['refreshToken']);
 
-    await this.userService.update(createdUser.id, { refreshToken: hashedRefreshToken })
+    await this.userService.update(createdUser.id, {
+      refreshToken: hashedRefreshToken,
+    });
 
     return tokens;
   }
@@ -61,10 +66,13 @@ export class AuthService {
   async getTokens(userId: string, email: string): Promise<jwtTokenDto> {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync({ sub: userId, email }),
-      this.jwtService.signAsync({ sub: userId, email }, {
-        secret: process.env.JWT_REFRESH_SECRET,
-        expiresIn: '7d',
-      }),
+      this.jwtService.signAsync(
+        { sub: userId, email },
+        {
+          secret: process.env.JWT_REFRESH_SECRET,
+          expiresIn: '7d',
+        },
+      ),
     ]);
 
     return {
@@ -89,6 +97,6 @@ export class AuthService {
   }
 
   hash(data: string): Promise<string> {
-    return bcrypt.hash(data, 10)
+    return bcrypt.hash(data, 10);
   }
 }

@@ -12,9 +12,12 @@ export class UsersService {
   constructor(
     @Inject('USER_REPOSITORY')
     private userRepository: Repository<User>,
-  ) { }
+  ) {}
 
-  async findAll(paginationDto: PaginationDto, searchFilterDto: SearchFilterDto) {
+  async findAll(
+    paginationDto: PaginationDto,
+    searchFilterDto: SearchFilterDto,
+  ) {
     const { createdAt, limit = 10 } = paginationDto;
 
     const queryBuilder = this.userRepository
@@ -23,11 +26,15 @@ export class UsersService {
       .limit(limit + 1);
 
     if (searchFilterDto.login) {
-      queryBuilder.andWhere('user.login ILIKE :login', { login: `%${searchFilterDto.login}%` });
+      queryBuilder.andWhere('user.login ILIKE :login', {
+        login: `%${searchFilterDto.login}%`,
+      });
     }
 
     if (createdAt) {
-      queryBuilder.andWhere('user.createdAt < :cursor', { cursor: new Date(createdAt), });
+      queryBuilder.andWhere('user.createdAt < :cursor', {
+        cursor: new Date(createdAt),
+      });
     }
 
     const users = await queryBuilder.getMany();
@@ -36,8 +43,6 @@ export class UsersService {
     if (hasNextPage) {
       users.pop();
     }
-
-    console.log(users)
 
     const lastUser = users[users.length - 1];
 
@@ -61,7 +66,7 @@ export class UsersService {
 
   create(createUserDto: CreateUserDto) {
     const user = this.userRepository.create(createUserDto);
-    return this.userRepository.save(user)
+    return this.userRepository.save(user);
   }
 
   delete(userId: string) {
@@ -79,7 +84,10 @@ export class UsersService {
 
     const changedFields: Partial<User> = {};
 
-    for (const [key, value] of Object.entries(updateUserDto)) {
+    for (const [key, value] of Object.entries(updateUserDto) as [
+      keyof UpdateUserDto,
+      UpdateUserDto[keyof UpdateUserDto],
+    ][]) {
       if (value !== undefined && user[key] !== value) {
         changedFields[key] = value;
       }

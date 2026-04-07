@@ -6,7 +6,13 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/features/users/dto/create-user.dto';
@@ -19,7 +25,7 @@ import { User } from './decorators/user.decorator';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
@@ -51,9 +57,7 @@ export class AuthController {
     status: 401,
     description: 'Invalid login or password',
   })
-  login(
-    @User() user: { userId: string, email: string }
-  ) {
+  login(@User() user: { userId: string; email: string }) {
     return this.authService.signIn(user.userId, user.email);
   }
 
@@ -74,9 +78,7 @@ export class AuthController {
     status: 404,
     description: 'User not found',
   })
-  me(
-    @User() user: { userId: string, email: string }
-  ) {
+  me(@User() user: { userId: string; email: string }) {
     return this.authService.getMe(user.userId);
   }
 }

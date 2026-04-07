@@ -7,8 +7,8 @@ export const databaseProviders = [
     provide: 'DATA_SOURCE',
     inject: [ConfigService],
     useFactory: (configService: ConfigService) => {
-      const dataSource = new DataSource(databaseSourceOptions(configService))
+      const dataSource = new DataSource(databaseSourceOptions(configService));
       return dataSource.initialize();
-    }
+    },
   },
 ];

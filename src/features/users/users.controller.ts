@@ -5,7 +5,6 @@ import {
   Get,
   Patch,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -28,7 +27,7 @@ import { User } from './entities/user.entity';
 @ApiBearerAuth()
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get()
   @UseGuards(JwtAuthGuard)
@@ -57,8 +56,8 @@ export class UsersController {
   })
   @ApiBody({ type: UpdateUserDto })
   update(
-    @CurrentUser() user: { userId: string, email: string },
-    @Body() updateUserDto: UpdateUserDto
+    @CurrentUser() user: { userId: string; email: string },
+    @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(user.userId, updateUserDto);
   }
@@ -74,7 +73,7 @@ export class UsersController {
       example: { message: 'User was deleted' },
     },
   })
-  async remove(@CurrentUser() user: { userId: string, email: string }) {
+  async remove(@CurrentUser() user: { userId: string; email: string }) {
     await this.usersService.delete(user.userId);
 
     return { message: 'User was deleted' };

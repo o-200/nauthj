@@ -99,7 +99,8 @@ describe('AuthService', () => {
         description: 'hello',
       };
 
-      jest.spyOn(service, 'hash')
+      jest
+        .spyOn(service, 'hash')
         .mockResolvedValueOnce('hashed-password')
         .mockResolvedValueOnce('hashed-refresh-token');
 
@@ -143,8 +144,14 @@ describe('AuthService', () => {
 
       const result = await service.signIn('user-1', 'alex@example.com');
 
-      expect(service.getTokens).toHaveBeenCalledWith('user-1', 'alex@example.com');
-      expect(service.updateRefreshToken).toHaveBeenCalledWith('user-1', 'refresh-token');
+      expect(service.getTokens).toHaveBeenCalledWith(
+        'user-1',
+        'alex@example.com',
+      );
+      expect(service.updateRefreshToken).toHaveBeenCalledWith(
+        'user-1',
+        'refresh-token',
+      );
       expect(result).toEqual({
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
@@ -202,7 +209,8 @@ describe('AuthService', () => {
         email: 'alex@example.com',
       });
 
-      expect(jwtService.signAsync).toHaveBeenNthCalledWith(2,
+      expect(jwtService.signAsync).toHaveBeenNthCalledWith(
+        2,
         {
           sub: 'user-1',
           email: 'alex@example.com',
@@ -240,7 +248,7 @@ describe('AuthService', () => {
       };
 
       userService.findByLogin.mockResolvedValue(user);
-      mockedBcrypt.compare.mockResolvedValue(false as never);
+      mockedBcrypt.compare.mockResolvedValue(false);
 
       const result = await service.validateUser({
         login: 'alex',
@@ -258,7 +266,7 @@ describe('AuthService', () => {
       };
 
       userService.findByLogin.mockResolvedValue(user);
-      mockedBcrypt.compare.mockResolvedValue(true as never);
+      mockedBcrypt.compare.mockResolvedValue(true);
 
       const result = await service.validateUser({
         login: 'alex',
