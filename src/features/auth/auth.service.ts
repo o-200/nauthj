@@ -32,7 +32,7 @@ export class AuthService {
     const tokens = await this.getTokens(createdUser.id, user.email);
     const hashedRefreshToken = await this.hash(tokens['refreshToken']);
 
-    await this.userService.update(createdUser.id, {
+    await this.userService.updateRefreshToken(createdUser.id, {
       refreshToken: hashedRefreshToken,
     });
 
@@ -58,7 +58,7 @@ export class AuthService {
 
   async updateRefreshToken(userId: string, refreshToken: string) {
     const hashedRefreshToken = await this.hash(refreshToken);
-    await this.userService.update(userId, {
+    await this.userService.updateRefreshToken(userId, {
       refreshToken: hashedRefreshToken,
     });
   }

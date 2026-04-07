@@ -9,6 +9,7 @@ import {
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { RefreshTokenDto } from '../auth/dto/refresh-token.dto';
 
 type MockUserRepository = Pick<
   Repository<User>,
@@ -294,7 +295,8 @@ describe('UsersService', () => {
         id: '1',
         login: 'alex',
         email: 'alex@example.com',
-        refreshToken: 'old-token',
+        age: 20,
+        description: 'old description',
       } as User;
 
       const updatedUser = {
@@ -317,7 +319,6 @@ describe('UsersService', () => {
       const result = await service.update('1', {
         login: 'alex-new',
         email: 'alex@example.com',
-        refreshToken: undefined,
       });
 
       expect(userRepository.update).toHaveBeenCalledWith('1', {
@@ -331,7 +332,67 @@ describe('UsersService', () => {
       expect(result).toEqual(updatedUser);
     });
 
-    it('should update refreshToken when it changed', async () => {
+    it('should throw NotFoundException when user disappears after update', async () => {
+      const existingUser = {
+        id: '1',
+        login: 'alex',
+        email: 'alex@example.com',
+      } as User;
+
+      const updateResult: UpdateResult = {
+        raw: [],
+        affected: 1,
+        generatedMaps: [],
+      };
+
+      userRepository.findOne
+        .mockResolvedValueOnce(existingUser)
+        .mockResolvedValueOnce(null);
+
+      userRepository.update.mockResolvedValue(updateResult);
+
+      await expect(
+        service.update('1', {
+          login: 'alex-new',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('updateRefreshToken', () => {
+    it('should throw NotFoundException when user does not exist', async () => {
+      const dto: RefreshTokenDto = {
+        refreshToken: 'new-token',
+      };
+
+      userRepository.findOne.mockResolvedValueOnce(null);
+
+      await expect(service.updateRefreshToken('1', dto)).rejects.toThrow(
+        NotFoundException,
+      );
+
+      expect(userRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('should return user without update if refresh token did not change', async () => {
+      const existingUser = {
+        id: '1',
+        refreshToken: 'same-token',
+      } as User;
+
+      const dto: RefreshTokenDto = {
+        refreshToken: 'same-token',
+      };
+
+      userRepository.findOne.mockResolvedValue(existingUser);
+
+      const result = await service.updateRefreshToken('1', dto);
+
+      expect(userRepository.update).not.toHaveBeenCalled();
+      expect(result).toBe(existingUser);
+    });
+
+    it('should update refresh token when it changed', async () => {
       const existingUser = {
         id: '1',
         refreshToken: 'old-token',
@@ -341,6 +402,10 @@ describe('UsersService', () => {
         id: '1',
         refreshToken: 'new-token',
       } as User;
+
+      const dto: RefreshTokenDto = {
+        refreshToken: 'new-token',
+      };
 
       const updateResult: UpdateResult = {
         raw: [],
@@ -354,14 +419,44 @@ describe('UsersService', () => {
 
       userRepository.update.mockResolvedValue(updateResult);
 
-      const result = await service.update('1', {
-        refreshToken: 'new-token',
-      });
+      const result = await service.updateRefreshToken('1', dto);
 
       expect(userRepository.update).toHaveBeenCalledWith('1', {
         refreshToken: 'new-token',
       });
+
+      expect(userRepository.findOne).toHaveBeenNthCalledWith(2, {
+        where: { id: '1' },
+      });
+
       expect(result).toEqual(updatedUser);
+    });
+
+    it('should throw NotFoundException when user disappears after refresh token update', async () => {
+      const existingUser = {
+        id: '1',
+        refreshToken: 'old-token',
+      } as User;
+
+      const dto: RefreshTokenDto = {
+        refreshToken: 'new-token',
+      };
+
+      const updateResult: UpdateResult = {
+        raw: [],
+        affected: 1,
+        generatedMaps: [],
+      };
+
+      userRepository.findOne
+        .mockResolvedValueOnce(existingUser)
+        .mockResolvedValueOnce(null);
+
+      userRepository.update.mockResolvedValue(updateResult);
+
+      await expect(service.updateRefreshToken('1', dto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

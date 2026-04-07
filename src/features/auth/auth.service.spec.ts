@@ -20,6 +20,7 @@ describe('AuthService', () => {
     findByEmail: jest.Mock;
     create: jest.Mock;
     update: jest.Mock;
+    updateRefreshToken: jest.Mock;
     findById: jest.Mock;
     findByLogin: jest.Mock;
   };
@@ -35,6 +36,7 @@ describe('AuthService', () => {
       findByEmail: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      updateRefreshToken: jest.fn(),
       findById: jest.fn(),
       findByLogin: jest.fn(),
     };
@@ -111,7 +113,7 @@ describe('AuthService', () => {
         refreshToken: 'refresh-token',
       });
 
-      userService.update.mockResolvedValue({
+      userService.updateRefreshToken.mockResolvedValue({
         ...createdUser,
         refreshToken: 'hashed-refresh-token',
       });
@@ -123,7 +125,7 @@ describe('AuthService', () => {
         ...createUserDto,
         password: 'hashed-password',
       });
-      expect(userService.update).toHaveBeenCalledWith('user-1', {
+      expect(userService.updateRefreshToken).toHaveBeenCalledWith('user-1', {
         refreshToken: 'hashed-refresh-token',
       });
       expect(result).toEqual({
@@ -185,12 +187,12 @@ describe('AuthService', () => {
   describe('updateRefreshToken', () => {
     it('should hash refresh token and update user', async () => {
       jest.spyOn(service, 'hash').mockResolvedValue('hashed-refresh-token');
-      userService.update.mockResolvedValue(undefined);
+      userService.updateRefreshToken.mockResolvedValue(undefined);
 
       await service.updateRefreshToken('user-1', 'plain-refresh-token');
 
       expect(service.hash).toHaveBeenCalledWith('plain-refresh-token');
-      expect(userService.update).toHaveBeenCalledWith('user-1', {
+      expect(userService.updateRefreshToken).toHaveBeenCalledWith('user-1', {
         refreshToken: 'hashed-refresh-token',
       });
     });

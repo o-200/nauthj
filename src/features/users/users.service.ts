@@ -73,7 +73,7 @@ export class UsersService {
     return this.userRepository.softDelete(userId);
   }
 
-  async update(userId: string, updateUserDto: UpdateUserDto | RefreshTokenDto) {
+  async update(userId: string, updateUserDto: UpdateUserDto) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -82,14 +82,31 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    const changedFields: Partial<User> = {};
+    const allowedFields = [
+      'login',
+      'email',
+      'password',
+      'age',
+      'description',
+    ] as const;
 
-    for (const [key, value] of Object.entries(updateUserDto) as [
-      keyof UpdateUserDto,
-      UpdateUserDto[keyof UpdateUserDto],
-    ][]) {
+    type UpdatableField = (typeof allowedFields)[number];
+    type ChangedFields = Partial<Pick<User, UpdatableField>>;
+
+    const changedFields: ChangedFields = {};
+
+    const setChangedField = <K extends UpdatableField>(
+      key: K,
+      value: User[K],
+    ) => {
+      changedFields[key] = value;
+    };
+
+    for (const key of allowedFields) {
+      const value = updateUserDto[key];
+
       if (value !== undefined && user[key] !== value) {
-        changedFields[key] = value;
+        setChangedField(key, value);
       }
     }
 
@@ -99,8 +116,42 @@ export class UsersService {
 
     await this.userRepository.update(userId, changedFields);
 
-    return this.userRepository.findOne({
+    const updatedUser = await this.userRepository.findOne({
       where: { id: userId },
     });
+
+    if (!updatedUser) {
+      throw new NotFoundException('User not found after update');
+    }
+
+    return updatedUser;
+  }
+
+  async updateRefreshToken(userId: string, refreshTokenDto: RefreshTokenDto) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.refreshToken === refreshTokenDto.refreshToken) {
+      return user;
+    }
+
+    await this.userRepository.update(userId, {
+      refreshToken: refreshTokenDto.refreshToken,
+    });
+
+    const updatedUser = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!updatedUser) {
+      throw new NotFoundException('User not found after refresh token update');
+    }
+
+    return updatedUser;
   }
 }
