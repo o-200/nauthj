@@ -6,8 +6,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Avatar } from 'src/features/avatars/entities/avatar.entity';
 
 @Entity()
 export class User {
@@ -64,6 +66,9 @@ export class User {
   })
   @Column({ type: 'text', nullable: true })
   refreshToken: string;
+
+  @OneToMany(() => Avatar, (avatar) => avatar.user)
+  avatars: Avatar[];
 
   @ApiProperty({
     example: '2026-04-02T10:00:00.000Z',
