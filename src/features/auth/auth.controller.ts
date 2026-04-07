@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -15,6 +14,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
 import { jwtTokenDto } from './dto/jwt-token.dto';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
+import { User } from './decorators/user.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -51,9 +51,10 @@ export class AuthController {
     status: 401,
     description: 'Invalid login or password',
   })
-  login(@Req() req) {
-    const user = req.user;
-    return this.authService.signIn(user.id, user.email);
+  login(
+    @User() user: { userId: string, email: string }
+  ) {
+    return this.authService.signIn(user.userId, user.email);
   }
 
   @Get('me')
@@ -73,8 +74,9 @@ export class AuthController {
     status: 404,
     description: 'User not found',
   })
-  me(@Req() req) {
-    const userId = req.user['userId'];
-    return this.authService.getMe(userId);
+  me(
+    @User() user: { userId: string, email: string }
+  ) {
+    return this.authService.getMe(user.userId);
   }
 }

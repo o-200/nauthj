@@ -75,9 +75,8 @@ describe('UsersController', () => {
   describe('update', () => {
     it('should call usersService.update with req.user.userId and dto', async () => {
       const req = {
-        user: {
-          userId: 'user-123',
-        },
+        userId: 'user-123',
+        email: 'mymail@my'
       };
 
       const updateUserDto: UpdateUserDto = {
@@ -106,9 +105,8 @@ describe('UsersController', () => {
   describe('remove', () => {
     it('should call usersService.delete with req.user.userId and return message', async () => {
       const req = {
-        user: {
-          userId: 'user-123',
-        },
+        userId: 'user-123',
+        email: 'mymail@a'
       };
 
       usersService.delete.mockResolvedValue({ affected: 1 });

@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { User as CurrentUser } from '../auth/decorators/user.decorator';
 
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -56,11 +57,10 @@ export class UsersController {
   })
   @ApiBody({ type: UpdateUserDto })
   update(
-    @Req() req,
+    @CurrentUser() user: { userId: string, email: string },
     @Body() updateUserDto: UpdateUserDto
   ) {
-    const userId = req.user['userId'];
-    return this.usersService.update(userId, updateUserDto);
+    return this.usersService.update(user.userId, updateUserDto);
   }
 
   @Delete('me')
@@ -74,9 +74,8 @@ export class UsersController {
       example: { message: 'User was deleted' },
     },
   })
-  async remove(@Req() req) {
-    const userId = req.user['userId'];
-    await this.usersService.delete(userId);
+  async remove(@CurrentUser() user: { userId: string, email: string }) {
+    await this.usersService.delete(user.userId);
 
     return { message: 'User was deleted' };
   }
