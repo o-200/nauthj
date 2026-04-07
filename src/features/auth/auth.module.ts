@@ -7,11 +7,15 @@ import { UsersModule } from 'src/features/users/users.module';
 import { JwtStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './local.strategy';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     PassportModule,
-    JwtModule.register(jwtConfig),
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => jwtConfig(configService)
+    }),
     UsersModule
   ],
   controllers: [AuthController],
