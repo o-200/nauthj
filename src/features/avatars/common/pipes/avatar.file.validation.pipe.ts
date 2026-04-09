@@ -16,7 +16,7 @@ export class AvatarFileValidationPipe implements PipeTransform<
 
     if (!this.allowedMimeTypes.includes(file.mimetype)) {
       throw new BadRequestException(
-        'Invalid file type. Allowed types: jpeg, png, webp',
+        `Invalid file type. Allowed types: ${this.allowedMimeTypes.join(', ')}`,
       );
     }
 
