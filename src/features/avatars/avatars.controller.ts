@@ -24,6 +24,7 @@ import { AvatarsService } from './avatars.service';
 import { CreateAvatarDto } from './dto/create-avatar.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User as CurrentUser } from '../auth/decorators/user.decorator';
+import { AvatarFileValidationPipe } from './common/pipes/avatar.file.validation.pipe';
 
 @ApiTags('Avatars')
 @ApiBearerAuth()
@@ -73,7 +74,7 @@ export class AvatarsController {
   })
   create(
     @Body() createAvatarDto: CreateAvatarDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(new AvatarFileValidationPipe()) file: Express.Multer.File,
     @CurrentUser() user: { sub: string; email: string },
   ) {
     const userId = user.sub;
