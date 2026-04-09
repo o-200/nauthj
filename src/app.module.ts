@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { FeaturesModule } from './features/features.module';
 import { ConfigModule } from '@nestjs/config';
+import { AppCacheModule } from './providers/cache/app.cache.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
       isGlobal: true,
     }),
     FeaturesModule,
+    AppCacheModule,
   ],
   controllers: [AppController],
   providers: [AppService],
