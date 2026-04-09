@@ -3,8 +3,10 @@ import {
   Controller,
   Get,
   HttpCode,
+  Inject,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -21,11 +23,16 @@ import { LocalAuthGuard } from './local-auth.guard';
 import { jwtTokenDto } from './dto/jwt-token.dto';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
 import { User } from './decorators/user.decorator';
+import { AuthMeCacheInterceptor } from './common/interceptors/auth-me-cache.interceptor';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
@@ -63,6 +70,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(AuthMeCacheInterceptor)
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get current authenticated user' })
   @ApiResponse({

@@ -8,7 +8,6 @@ import { Request } from 'express';
 type JwtUser = {
   sub: string;
   email: string;
-  userId?: string;
 };
 
 type RequestWithUser = Request & {
@@ -20,11 +19,7 @@ export const User = createParamDecorator(
     const request = ctx.switchToHttp().getRequest<RequestWithUser>();
     const user = request.user;
 
-    if (!user?.sub) {
-      throw new UnauthorizedException('User not found in request');
-    }
-
-    if (!user.userId && !user.email) {
+    if (!user?.sub || !user.email) {
       throw new UnauthorizedException('User not found in request');
     }
 

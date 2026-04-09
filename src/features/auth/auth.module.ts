@@ -8,6 +8,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './local.strategy';
 import { ConfigService } from '@nestjs/config';
+import { AuthMeCacheInterceptor } from './common/interceptors/auth-me-cache.interceptor';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { ConfigService } from '@nestjs/config';
     UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, LocalStrategy],
+  providers: [AuthService, JwtStrategy, LocalStrategy, AuthMeCacheInterceptor],
   exports: [AuthService],
 })
 export class AuthModule {}
