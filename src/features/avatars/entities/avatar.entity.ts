@@ -7,6 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
   Column,
+  RelationId,
 } from 'typeorm';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -39,6 +40,8 @@ export class Avatar {
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @RelationId((avatar: Avatar) => avatar.user)
   user_id: string;
 
   @ApiProperty({

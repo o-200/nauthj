@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAvatarDto } from './dto/create-avatar.dto';
 import { Avatar } from './entities/avatar.entity';
 import { Repository } from 'typeorm';
@@ -13,12 +18,28 @@ export class AvatarsService {
     private readonly usersService: UsersService,
   ) {}
 
-  async create(createAvatarDto: CreateAvatarDto, file: Express.Multer.File) {
-    const { user_id, ...uploadDto } = createAvatarDto;
+  async create(
+    createAvatarDto: CreateAvatarDto,
+    file: Express.Multer.File,
+    user_id: string,
+  ) {
+    const { ...uploadDto } = createAvatarDto;
 
     const user = await this.usersService.findById(user_id);
     if (!user) {
       throw new NotFoundException('User not found');
+    }
+
+    const avatarsCount = await this.avatarRepository.count({
+      where: {
+        user: {
+          id: user_id,
+        },
+      },
+    });
+
+    if (avatarsCount >= 5) {
+      throw new BadRequestException('User can only have maximum 5 avatars');
     }
 
     const uploadFileResult = await this.s3Service.uploadFile(uploadDto, file);
@@ -31,15 +52,37 @@ export class AvatarsService {
     return this.avatarRepository.save(avatar);
   }
 
-  findAll() {
-    return this.avatarRepository.find();
+  findAll(userId: string) {
+    return this.avatarRepository.find({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
   }
 
   findOne(id: number) {
     return `This action returns a #${id} avatar`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} avatar`;
+  async remove(userId: string, avatarId: string) {
+    const avatar = await this.avatarRepository.findOne({
+      where: { id: avatarId },
+    });
+    if (!avatar) {
+      throw new NotFoundException('Avatar not found');
+    }
+    if (avatar.user_id !== userId) {
+      throw new BadRequestException('That avatar isnt created by current user');
+    }
+
+    // await this.cacheManager.clear();
+    await this.avatarRepository.softDelete(avatarId);
+
+    return { message: 'done' };
   }
 }
