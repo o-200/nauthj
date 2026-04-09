@@ -14,6 +14,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { User } from 'src/features/users/entities/user.entity';
 
 @Entity()
+// @Index('idx_avatar_user_id_not_deleted', ['user_id'], {
+//  where: '"deletedAt" IS NULL',
+//})
 export class Avatar {
   @ApiProperty({
     example: '512cf215-61b6-4725-a796-51bf087522a50',

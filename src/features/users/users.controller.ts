@@ -13,6 +13,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -25,6 +26,7 @@ import { SearchFilterDto } from './dto/search-filter.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Cache, CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
+import { ActiveUsersDto } from './dto/active-users.dto';
 
 @Controller('users')
 @UseInterceptors(CacheInterceptor)
@@ -50,6 +52,36 @@ export class UsersController {
     @Query() searchFilterDto: SearchFilterDto,
   ) {
     return this.usersService.findAll(paginationDto, searchFilterDto);
+  }
+
+  @Get('active')
+  @Get('active')
+  @ApiOperation({
+    summary: 'Get active users',
+    description:
+      'Returns users with non-null description and at least 2 avatars. Optional filtering by age range.',
+  })
+  @ApiQuery({
+    name: 'ageMin',
+    required: false,
+    type: Number,
+    example: 18,
+    description: 'Minimum age (inclusive)',
+  })
+  @ApiQuery({
+    name: 'ageMax',
+    required: false,
+    type: Number,
+    example: 30,
+    description: 'Maximum age (inclusive)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of active users',
+    type: [User],
+  })
+  findActive(@Query() activeUsersDto: ActiveUsersDto) {
+    return this.usersService.findActive(activeUsersDto);
   }
 
   @Patch('me')

@@ -8,6 +8,7 @@ import { SearchFilterDto } from './dto/search-filter.dto';
 import { RefreshTokenDto } from '../auth/dto/refresh-token.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { ActiveUsersDto } from './dto/active-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -54,6 +55,29 @@ export class UsersService {
       data: users,
       nextCursor: hasNextPage && lastUser ? lastUser.createdAt : null,
     };
+  }
+
+  async findActive(activeUsersDto: ActiveUsersDto) {
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .where('user.description IS NOT NULL')
+      .leftJoin('user.avatars', 'avatar')
+      .groupBy('user.id')
+      .having('COUNT(avatar.id) >= :minAvatars', { minAvatars: 2 })
+      .orderBy('user.createdAt', 'DESC');
+
+    if (activeUsersDto.ageMin) {
+      queryBuilder.andWhere('user.age >= :ageMin', {
+        ageMin: activeUsersDto.ageMin,
+      });
+    }
+    if (activeUsersDto.ageMax) {
+      queryBuilder.andWhere('user.age <= :ageMax', {
+        ageMax: activeUsersDto.ageMax,
+      });
+    }
+
+    return queryBuilder.getMany();
   }
 
   findById(userId: string) {

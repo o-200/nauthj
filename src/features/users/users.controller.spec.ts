@@ -5,11 +5,13 @@ import { PaginationDto } from './dto/pagination.dto';
 import { SearchFilterDto } from './dto/search-filter.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { ActiveUsersDto } from './dto/active-users.dto';
 
 describe('UsersController', () => {
   let controller: UsersController;
   let usersService: {
     findAll: jest.Mock;
+    findActive: jest.Mock;
     update: jest.Mock;
     delete: jest.Mock;
   };
@@ -24,6 +26,7 @@ describe('UsersController', () => {
   beforeEach(async () => {
     usersService = {
       findAll: jest.fn(),
+      findActive: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     };
@@ -80,6 +83,57 @@ describe('UsersController', () => {
         paginationDto,
         searchFilterDto,
       );
+      expect(result).toEqual(serviceResult);
+    });
+  });
+
+  describe('findActive', () => {
+    it('should call usersService.findActive with activeUsersDto and return result', async () => {
+      const activeUsersDto: ActiveUsersDto = {
+        ageMin: 18,
+        ageMax: 30,
+      };
+
+      const serviceResult = [
+        {
+          id: '1',
+          login: 'alex',
+          age: 20,
+          description: 'active user',
+        },
+        {
+          id: '2',
+          login: 'john',
+          age: 25,
+          description: 'another active user',
+        },
+      ];
+
+      usersService.findActive.mockResolvedValue(serviceResult);
+
+      const result = await controller.findActive(activeUsersDto);
+
+      expect(usersService.findActive).toHaveBeenCalledWith(activeUsersDto);
+      expect(result).toEqual(serviceResult);
+    });
+
+    it('should call usersService.findActive with empty dto', async () => {
+      const activeUsersDto: ActiveUsersDto = {};
+
+      const serviceResult = [
+        {
+          id: '1',
+          login: 'alex',
+          age: 20,
+          description: 'active user',
+        },
+      ];
+
+      usersService.findActive.mockResolvedValue(serviceResult);
+
+      const result = await controller.findActive(activeUsersDto);
+
+      expect(usersService.findActive).toHaveBeenCalledWith(activeUsersDto);
       expect(result).toEqual(serviceResult);
     });
   });

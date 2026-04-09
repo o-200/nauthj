@@ -11,6 +11,7 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RefreshTokenDto } from '../auth/dto/refresh-token.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { ActiveUsersDto } from './dto/active-users.dto';
 
 type MockUserRepository = Pick<
   Repository<User>,
@@ -19,19 +20,42 @@ type MockUserRepository = Pick<
 
 type MockQueryBuilder = Pick<
   SelectQueryBuilder<User>,
-  'orderBy' | 'limit' | 'andWhere' | 'getMany'
+  | 'where'
+  | 'leftJoin'
+  | 'groupBy'
+  | 'having'
+  | 'orderBy'
+  | 'limit'
+  | 'andWhere'
+  | 'getMany'
 >;
 
 const createMockQueryBuilder = (
   users: User[],
 ): jest.Mocked<MockQueryBuilder> => {
   const queryBuilder: jest.Mocked<MockQueryBuilder> = {
+    where: jest.fn(),
+    leftJoin: jest.fn(),
+    groupBy: jest.fn(),
+    having: jest.fn(),
     orderBy: jest.fn(),
     limit: jest.fn(),
     andWhere: jest.fn(),
     getMany: jest.fn(),
   };
 
+  queryBuilder.where.mockReturnValue(
+    queryBuilder as unknown as SelectQueryBuilder<User>,
+  );
+  queryBuilder.leftJoin.mockReturnValue(
+    queryBuilder as unknown as SelectQueryBuilder<User>,
+  );
+  queryBuilder.groupBy.mockReturnValue(
+    queryBuilder as unknown as SelectQueryBuilder<User>,
+  );
+  queryBuilder.having.mockReturnValue(
+    queryBuilder as unknown as SelectQueryBuilder<User>,
+  );
   queryBuilder.orderBy.mockReturnValue(
     queryBuilder as unknown as SelectQueryBuilder<User>,
   );
@@ -191,6 +215,117 @@ describe('UsersService', () => {
     });
   });
 
+  describe('findActive', () => {
+    it('should return active users without age filters', async () => {
+      const user1 = {
+        id: '1',
+        login: 'alex',
+        age: 20,
+        description: 'active user',
+      } as User;
+
+      const user2 = {
+        id: '2',
+        login: 'john',
+        age: 25,
+        description: 'another active user',
+      } as User;
+
+      const queryBuilder = createMockQueryBuilder([user1, user2]);
+
+      userRepository.createQueryBuilder.mockReturnValue(
+        queryBuilder as unknown as SelectQueryBuilder<User>,
+      );
+
+      const dto: ActiveUsersDto = {};
+
+      const result = await service.findActive(dto);
+
+      expect(userRepository.createQueryBuilder).toHaveBeenCalledWith('user');
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        'user.description IS NOT NULL',
+      );
+      expect(queryBuilder.leftJoin).toHaveBeenCalledWith(
+        'user.avatars',
+        'avatar',
+      );
+      expect(queryBuilder.groupBy).toHaveBeenCalledWith('user.id');
+      expect(queryBuilder.having).toHaveBeenCalledWith(
+        'COUNT(avatar.id) >= :minAvatars',
+        { minAvatars: 2 },
+      );
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith(
+        'user.createdAt',
+        'DESC',
+      );
+      expect(result).toEqual([user1, user2]);
+    });
+
+    it('should add ageMin filter when ageMin is provided', async () => {
+      const queryBuilder = createMockQueryBuilder([]);
+
+      userRepository.createQueryBuilder.mockReturnValue(
+        queryBuilder as unknown as SelectQueryBuilder<User>,
+      );
+
+      const dto: ActiveUsersDto = {
+        ageMin: 18,
+      };
+
+      await service.findActive(dto);
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'user.age >= :ageMin',
+        { ageMin: 18 },
+      );
+    });
+
+    it('should add ageMax filter when ageMax is provided', async () => {
+      const queryBuilder = createMockQueryBuilder([]);
+
+      userRepository.createQueryBuilder.mockReturnValue(
+        queryBuilder as unknown as SelectQueryBuilder<User>,
+      );
+
+      const dto: ActiveUsersDto = {
+        ageMax: 30,
+      };
+
+      await service.findActive(dto);
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'user.age <= :ageMax',
+        { ageMax: 30 },
+      );
+    });
+
+    it('should add both age filters when ageMin and ageMax are provided', async () => {
+      const queryBuilder = createMockQueryBuilder([]);
+
+      userRepository.createQueryBuilder.mockReturnValue(
+        queryBuilder as unknown as SelectQueryBuilder<User>,
+      );
+
+      const dto: ActiveUsersDto = {
+        ageMin: 18,
+        ageMax: 30,
+      };
+
+      await service.findActive(dto);
+
+      expect(queryBuilder.andWhere).toHaveBeenNthCalledWith(
+        1,
+        'user.age >= :ageMin',
+        { ageMin: 18 },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenNthCalledWith(
+        2,
+        'user.age <= :ageMax',
+        { ageMax: 30 },
+      );
+    });
+  });
+
   describe('findById', () => {
     it('should return user by id', async () => {
       const user = { id: '1' } as User;
@@ -252,6 +387,7 @@ describe('UsersService', () => {
       const result = await service.create(dto);
 
       expect(userRepository.create).toHaveBeenCalledWith(dto);
+      expect(mockCacheManager.clear).toHaveBeenCalledTimes(1);
       expect(userRepository.save).toHaveBeenCalledWith(createdUser);
       expect(result).toBe(savedUser);
     });
@@ -268,6 +404,7 @@ describe('UsersService', () => {
 
       const result = await service.delete('1');
 
+      expect(mockCacheManager.clear).toHaveBeenCalledTimes(1);
       expect(userRepository.softDelete).toHaveBeenCalledWith('1');
       expect(result).toEqual(deleteResult);
     });
@@ -299,6 +436,7 @@ describe('UsersService', () => {
       });
 
       expect(userRepository.update).not.toHaveBeenCalled();
+      expect(mockCacheManager.clear).not.toHaveBeenCalled();
       expect(result).toBe(existingUser);
     });
 
@@ -341,6 +479,7 @@ describe('UsersService', () => {
         where: { id: '1' },
       });
 
+      expect(mockCacheManager.clear).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedUser);
     });
 
@@ -401,6 +540,7 @@ describe('UsersService', () => {
       const result = await service.updateRefreshToken('1', dto);
 
       expect(userRepository.update).not.toHaveBeenCalled();
+      expect(mockCacheManager.clear).not.toHaveBeenCalled();
       expect(result).toBe(existingUser);
     });
 
@@ -441,6 +581,7 @@ describe('UsersService', () => {
         where: { id: '1' },
       });
 
+      expect(mockCacheManager.clear).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedUser);
     });
 
