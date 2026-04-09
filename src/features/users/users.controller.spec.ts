@@ -4,6 +4,7 @@ import { UsersService } from './users.service';
 import { PaginationDto } from './dto/pagination.dto';
 import { SearchFilterDto } from './dto/search-filter.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -11,6 +12,13 @@ describe('UsersController', () => {
     findAll: jest.Mock;
     update: jest.Mock;
     delete: jest.Mock;
+  };
+
+  const mockCacheManager = {
+    get: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+    clear: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -26,6 +34,10 @@ describe('UsersController', () => {
         {
           provide: UsersService,
           useValue: usersService,
+        },
+        {
+          provide: CACHE_MANAGER,
+          useValue: mockCacheManager,
         },
       ],
     }).compile();

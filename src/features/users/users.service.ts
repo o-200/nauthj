@@ -6,12 +6,16 @@ import { User } from './entities/user.entity';
 import { PaginationDto } from './dto/pagination.dto';
 import { SearchFilterDto } from './dto/search-filter.dto';
 import { RefreshTokenDto } from '../auth/dto/refresh-token.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject('USER_REPOSITORY')
     private userRepository: Repository<User>,
+
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async findAll(
@@ -64,12 +68,14 @@ export class UsersService {
     return this.userRepository.findOne({ where: { email } });
   }
 
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
     const user = this.userRepository.create(createUserDto);
+    await this.cacheManager.clear();
     return this.userRepository.save(user);
   }
 
-  delete(userId: string) {
+  async delete(userId: string) {
+    await this.cacheManager.clear();
     return this.userRepository.softDelete(userId);
   }
 
@@ -124,6 +130,7 @@ export class UsersService {
       throw new NotFoundException('User not found after update');
     }
 
+    await this.cacheManager.clear();
     return updatedUser;
   }
 
@@ -152,6 +159,7 @@ export class UsersService {
       throw new NotFoundException('User not found after refresh token update');
     }
 
+    await this.cacheManager.clear();
     return updatedUser;
   }
 }

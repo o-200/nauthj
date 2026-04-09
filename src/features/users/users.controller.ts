@@ -3,9 +3,11 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Patch,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -22,12 +24,17 @@ import { PaginationDto } from './dto/pagination.dto';
 import { SearchFilterDto } from './dto/search-filter.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { Cache, CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
 
+@Controller('users')
+@UseInterceptors(CacheInterceptor)
 @ApiTags('Users')
 @ApiBearerAuth()
-@Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   @Get()
   @UseGuards(JwtAuthGuard)

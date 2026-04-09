@@ -10,6 +10,7 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RefreshTokenDto } from '../auth/dto/refresh-token.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 type MockUserRepository = Pick<
   Repository<User>,
@@ -45,6 +46,13 @@ const createMockQueryBuilder = (
   return queryBuilder;
 };
 
+const mockCacheManager = {
+  get: jest.fn(),
+  set: jest.fn(),
+  del: jest.fn(),
+  clear: jest.fn(),
+};
+
 describe('UsersService', () => {
   let service: UsersService;
   let userRepository: jest.Mocked<MockUserRepository>;
@@ -65,6 +73,10 @@ describe('UsersService', () => {
         {
           provide: 'USER_REPOSITORY',
           useValue: mockUserRepository,
+        },
+        {
+          provide: CACHE_MANAGER,
+          useValue: mockCacheManager,
         },
       ],
     }).compile();
