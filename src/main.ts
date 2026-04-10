@@ -5,6 +5,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ApplicationLogger } from './common/logger/logger.service';
 import { RequestLoggingInterceptor } from './common/logger/request-logging.interceptor';
 import { ExceptionLoggingFilter } from './common/logger/exception-logging.filter';
+import {
+  bearerAuthOptions,
+  bearerAuthName,
+} from './config/swagger/bearer-auth.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,17 +24,7 @@ async function bootstrap() {
     .setDescription('The Nauthj API description')
     .setVersion('1.0')
     .addTag('Nauthj')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'Authorization',
-        description: 'Enter JWT token',
-        in: 'header',
-      },
-      'access-token',
-    )
+    .addBearerAuth(bearerAuthOptions, bearerAuthName)
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
