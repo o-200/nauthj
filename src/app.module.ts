@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { FeaturesModule } from './features/features.module';
 import { ConfigModule } from '@nestjs/config';
 import { AppCacheModule } from './providers/cache/app.cache.module';
+import { BackgroundJobsModule } from './providers/background-jobs/background-jobs.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { AppCacheModule } from './providers/cache/app.cache.module';
     }),
     FeaturesModule,
     AppCacheModule,
+    BackgroundJobsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

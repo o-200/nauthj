@@ -5,6 +5,7 @@ import {
   Get,
   Inject,
   Patch,
+  Post,
   Query,
   UseGuards,
   UseInterceptors,
@@ -27,6 +28,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Cache, CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
 import { ActiveUsersDto } from './dto/active-users.dto';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Controller('users')
 @UseInterceptors(CacheInterceptor)
@@ -36,6 +39,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectQueue('users') private readonly usersQueue: Queue,
   ) {}
 
   @Get()
@@ -114,5 +118,11 @@ export class UsersController {
   async remove(@CurrentUser() user: { userId: string; email: string }) {
     await this.usersService.delete(user.userId);
     return { message: 'User was deleted' };
+  }
+
+  @Post('reset-balances')
+  async resetBalances() {
+    await this.usersQueue.add('resetBalances', {});
+    return { message: 'Reset Balances job added to queue' };
   }
 }
