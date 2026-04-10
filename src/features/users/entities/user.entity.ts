@@ -33,6 +33,19 @@ export class User {
   login: string;
 
   @ApiProperty({
+    example: 1500,
+    description: 'User balance in cents',
+    minimum: 0,
+    default: 1000,
+  })
+  @Column({
+    name: 'balance_cents',
+    type: 'bigint',
+    default: '100000', // for testing purposes
+  })
+  balanceCents: string;
+
+  @ApiProperty({
     example: 'alex@example.com',
     description: 'Unique user email',
     maxLength: 64,

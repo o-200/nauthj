@@ -55,7 +55,6 @@ export class UsersController {
   }
 
   @Get('active')
-  @Get('active')
   @ApiOperation({
     summary: 'Get active users',
     description:
@@ -114,7 +113,6 @@ export class UsersController {
   })
   async remove(@CurrentUser() user: { userId: string; email: string }) {
     await this.usersService.delete(user.userId);
-
     return { message: 'User was deleted' };
   }
 }

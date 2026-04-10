@@ -4,7 +4,6 @@ import {
   IsEmail,
   IsInt,
   IsNotEmpty,
-  IsNumber,
   IsString,
   MaxLength,
 } from 'class-validator';
@@ -41,10 +40,9 @@ export class CreateUserDto {
   password: string;
 
   @ApiProperty({
-    example: '18',
+    example: 18,
     description: 'User age',
   })
-  @IsNumber()
   @IsInt()
   @Type(() => Number)
   age: number;
@@ -53,6 +51,7 @@ export class CreateUserDto {
     example: 'my description yopta',
     description: 'User description',
     maxLength: 1000,
+    required: false,
   })
   @IsString()
   @MaxLength(1000)
