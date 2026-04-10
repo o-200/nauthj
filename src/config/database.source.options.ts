@@ -3,6 +3,7 @@ import { DataSourceOptions } from 'typeorm';
 
 export const databaseSourceOptions = (
   configService: ConfigService,
+  customLogger?: unknown,
 ): DataSourceOptions => ({
   type: 'postgres',
   host: configService.getOrThrow<string>('POSTGRES_HOST'),
@@ -12,4 +13,6 @@ export const databaseSourceOptions = (
   database: configService.getOrThrow<string>('POSTGRES_DB'),
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   synchronize: true,
+  logging: ['query', 'error', 'schema', 'migration'],
+  logger: customLogger as DataSourceOptions['logger'],
 });
