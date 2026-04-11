@@ -8,6 +8,7 @@ import {
   Param,
   Get,
   UseGuards,
+  Inject,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -25,12 +26,17 @@ import { CreateAvatarDto } from './dto/create-avatar.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User as CurrentUser } from '../auth/decorators/user.decorator';
 import { AvatarFileValidationPipe } from './common/pipes/avatar.file.validation.pipe';
+import { Cache, CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
 
 @ApiTags('Avatars')
 @ApiBearerAuth()
 @Controller('avatars')
+@UseInterceptors(CacheInterceptor)
 export class AvatarsController {
-  constructor(private readonly avatarsService: AvatarsService) {}
+  constructor(
+    private readonly avatarsService: AvatarsService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -59,11 +65,6 @@ export class AvatarsController {
       required: ['file'],
     },
   })
-  //@ApiResponse({
-  //  status: 201,
-  //  description: 'Avatar uploaded successfully',
-  //  type: Avatar,
-  //})
   @ApiResponse({
     status: 400,
     description: 'Bad request: invalid file or avatar limit exceeded',

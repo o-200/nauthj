@@ -9,6 +9,8 @@ import { Avatar } from './entities/avatar.entity';
 import { Repository } from 'typeorm';
 import { S3Service } from 'src/providers/files/s3/s3.service';
 import { UsersService } from '../users/users.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class AvatarsService {
@@ -16,16 +18,17 @@ export class AvatarsService {
     @Inject('AVATAR_REPOSITORY') private avatarRepository: Repository<Avatar>,
     private readonly s3Service: S3Service,
     private readonly usersService: UsersService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(
     createAvatarDto: CreateAvatarDto,
     file: Express.Multer.File,
-    user_id: string,
+    userId: string,
   ) {
     const { ...uploadDto } = createAvatarDto;
 
-    const user = await this.usersService.findById(user_id);
+    const user = await this.usersService.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -33,7 +36,7 @@ export class AvatarsService {
     const avatarsCount = await this.avatarRepository.count({
       where: {
         user: {
-          id: user_id,
+          id: userId,
         },
       },
     });
@@ -49,11 +52,21 @@ export class AvatarsService {
       user,
     });
 
+    await this.cacheManager.del(this.userAvatarsCacheKey(userId));
+
     return this.avatarRepository.save(avatar);
   }
 
-  findAll(userId: string) {
-    return this.avatarRepository.find({
+  async findAll(userId: string) {
+    const cachedAvatars = await this.cacheManager.get<Avatar[]>(
+      this.userAvatarsCacheKey(userId),
+    );
+
+    if (cachedAvatars) {
+      return cachedAvatars;
+    }
+
+    const avatars = this.avatarRepository.find({
       where: {
         user: {
           id: userId,
@@ -63,10 +76,9 @@ export class AvatarsService {
         createdAt: 'DESC',
       },
     });
-  }
 
-  findOne(id: number) {
-    return `This action returns a #${id} avatar`;
+    await this.cacheManager.set(this.userAvatarsCacheKey(userId), avatars);
+    return avatars;
   }
 
   async remove(userId: string, avatarId: string) {
@@ -80,9 +92,13 @@ export class AvatarsService {
       throw new BadRequestException('That avatar isnt created by current user');
     }
 
-    // await this.cacheManager.clear();
     await this.avatarRepository.softDelete(avatarId);
+    await this.cacheManager.del(this.userAvatarsCacheKey(userId));
 
     return { message: 'done' };
+  }
+
+  userAvatarsCacheKey(userId: string) {
+    return `user:${userId}:avatars`;
   }
 }

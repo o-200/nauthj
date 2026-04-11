@@ -39,6 +39,12 @@ export class ResetBalancesJob {
 
       const userIds = result.data.map((user) => user.id);
 
+      await Promise.all(
+        userIds.map(async (userId) => {
+          await this.cacheManager.del(this.usersService.userCacheKey(userId));
+        }),
+      );
+
       await this.dataSource
         .createQueryBuilder()
         .update(User)
@@ -55,7 +61,7 @@ export class ResetBalancesJob {
       cursor = result.nextCursor;
     }
 
-    await this.cacheManager.clear();
+    await this.cacheManager.del('users:active');
 
     return {
       totalUpdated,

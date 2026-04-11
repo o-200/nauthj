@@ -58,6 +58,12 @@ export class UsersService {
   }
 
   async findActive(activeUsersDto: ActiveUsersDto) {
+    const cachedUsers = await this.cacheManager.get<User[]>('users:active');
+
+    if (cachedUsers) {
+      return cachedUsers;
+    }
+
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
       .where('user.description IS NOT NULL')
@@ -77,10 +83,21 @@ export class UsersService {
       });
     }
 
-    return queryBuilder.getMany();
+    const activeUsers = await queryBuilder.getMany();
+    await this.cacheManager.set('users:active', activeUsers, 60000);
+
+    return activeUsers;
   }
 
-  findById(userId: string) {
+  async findById(userId: string) {
+    const cachedUser = await this.cacheManager.get<User>(
+      this.userCacheKey(userId),
+    );
+
+    if (cachedUser) {
+      return cachedUser;
+    }
+
     return this.userRepository.findOne({ where: { id: userId } });
   }
 
@@ -94,12 +111,13 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const user = this.userRepository.create(createUserDto);
-    await this.cacheManager.clear();
+    await this.cacheManager.set(this.userCacheKey(user.id), user, 60000);
+
     return this.userRepository.save(user);
   }
 
   async delete(userId: string) {
-    await this.cacheManager.clear();
+    await this.cacheManager.del(this.userCacheKey(userId));
     return this.userRepository.softDelete(userId);
   }
 
@@ -154,7 +172,7 @@ export class UsersService {
       throw new NotFoundException('User not found after update');
     }
 
-    await this.cacheManager.clear();
+    await this.cacheManager.del(this.userCacheKey(userId));
     return updatedUser;
   }
 
@@ -171,7 +189,7 @@ export class UsersService {
       throw new NotFoundException('User not found after update');
     }
 
-    await this.cacheManager.clear();
+    await this.cacheManager.del(this.userCacheKey(userId));
     return updatedUser;
   }
 
@@ -200,7 +218,11 @@ export class UsersService {
       throw new NotFoundException('User not found after refresh token update');
     }
 
-    await this.cacheManager.clear();
+    await this.cacheManager.del(this.userCacheKey(userId));
     return updatedUser;
+  }
+
+  userCacheKey(userId: string) {
+    return `user:${userId}`;
   }
 }
