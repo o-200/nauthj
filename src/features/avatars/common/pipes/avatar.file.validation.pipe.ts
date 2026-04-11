@@ -5,9 +5,9 @@ export class AvatarFileValidationPipe implements PipeTransform<
   Express.Multer.File,
   Express.Multer.File
 > {
-  private readonly maxSizeInBytes = 5 * 1024 * 1024; // 5 MB
+  private readonly maxSizeInBytes = 10 * 1024 * 1024; // 10 MB
 
-  private readonly allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  private readonly allowedMimeTypes = ['image/jpeg', 'image/png'];
 
   transform(file: Express.Multer.File): Express.Multer.File {
     if (!file) {
