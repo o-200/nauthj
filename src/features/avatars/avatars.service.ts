@@ -77,7 +77,11 @@ export class AvatarsService {
       },
     });
 
-    await this.cacheManager.set(this.userAvatarsCacheKey(userId), avatars);
+    await this.cacheManager.set(
+      this.userAvatarsCacheKey(userId),
+      avatars,
+      60000,
+    );
     return avatars;
   }
 
