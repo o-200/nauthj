@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppCacheModule } from './providers/cache/app.cache.module';
 import { BackgroundJobsModule } from './providers/background-jobs/background-jobs.module';
 import { LoggerModule } from './common/logger/logger.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { LoggerModule } from './common/logger/logger.module';
     AppCacheModule,
     BackgroundJobsModule,
     LoggerModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

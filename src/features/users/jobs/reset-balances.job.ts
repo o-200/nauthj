@@ -6,6 +6,7 @@ import { User } from '../entities/user.entity';
 import { UsersService } from '../users.service';
 import { PaginationDto } from '../dto/pagination.dto';
 import { SearchFilterDto } from '../dto/search-filter.dto';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class ResetBalancesJob {
@@ -15,6 +16,7 @@ export class ResetBalancesJob {
     private readonly usersService: UsersService,
   ) {}
 
+  @Cron('*/10 * * * *')
   async execute() {
     const limit = 100;
     let totalUpdated = 0;
