@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AvatarsController } from './avatars.controller';
 import { AvatarsService } from './avatars.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 describe('AvatarsController', () => {
   let controller: AvatarsController;
@@ -13,6 +14,13 @@ describe('AvatarsController', () => {
     remove: jest.fn(),
   };
 
+  const mockCacheManager = {
+    get: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+    clear: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AvatarsController],
@@ -20,6 +28,10 @@ describe('AvatarsController', () => {
         {
           provide: AvatarsService,
           useValue: mockAvatarsService,
+        },
+        {
+          provide: CACHE_MANAGER,
+          useValue: mockCacheManager,
         },
       ],
     }).compile();

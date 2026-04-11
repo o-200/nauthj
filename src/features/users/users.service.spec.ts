@@ -387,7 +387,7 @@ describe('UsersService', () => {
       const result = await service.create(dto);
 
       expect(userRepository.create).toHaveBeenCalledWith(dto);
-      expect(mockCacheManager.clear).toHaveBeenCalledTimes(1);
+      expect(mockCacheManager.set).toHaveBeenCalledTimes(1);
       expect(userRepository.save).toHaveBeenCalledWith(createdUser);
       expect(result).toBe(savedUser);
     });
@@ -404,7 +404,7 @@ describe('UsersService', () => {
 
       const result = await service.delete('1');
 
-      expect(mockCacheManager.clear).toHaveBeenCalledTimes(1);
+      expect(mockCacheManager.del).toHaveBeenCalledTimes(1);
       expect(userRepository.softDelete).toHaveBeenCalledWith('1');
       expect(result).toEqual(deleteResult);
     });
@@ -479,7 +479,7 @@ describe('UsersService', () => {
         where: { id: '1' },
       });
 
-      expect(mockCacheManager.clear).toHaveBeenCalledTimes(1);
+      expect(mockCacheManager.del).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedUser);
     });
 
@@ -581,7 +581,7 @@ describe('UsersService', () => {
         where: { id: '1' },
       });
 
-      expect(mockCacheManager.clear).toHaveBeenCalledTimes(1);
+      expect(mockCacheManager.del).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedUser);
     });
 
