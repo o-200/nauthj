@@ -21,7 +21,7 @@ import { CreateUserDto } from 'src/features/users/dto/create-user.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
 import { jwtTokenDto } from './dto/jwt-token.dto';
-import { UpdateUserDto } from '../users/dto/update-user.dto';
+import { SignInDto } from './dto/sign-in.dto';
 import { User } from './decorators/user.decorator';
 import { AuthMeCacheInterceptor } from './common/interceptors/auth-me-cache.interceptor';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -54,16 +54,13 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @HttpCode(200)
   @ApiOperation({ summary: 'Sign in user' })
-  @ApiBody({ type: UpdateUserDto })
+  @ApiBody({ type: SignInDto })
   @ApiResponse({
     status: 200,
     description: 'User successfully signed in',
     type: jwtTokenDto,
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Invalid login or password',
-  })
+  @ApiResponse({ status: 401, description: 'Invalid login or password' })
   login(@User() user: { userId: string; email: string }) {
     return this.authService.signIn(user.userId, user.email);
   }
