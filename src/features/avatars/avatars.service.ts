@@ -96,6 +96,10 @@ export class AvatarsService {
       throw new BadRequestException('That avatar isnt created by current user');
     }
 
+    if (avatar.filepath) {
+      await this.s3Service.removeFile({ path: avatar.filepath });
+    }
+
     await this.avatarRepository.softDelete(avatarId);
     await this.cacheManager.del(this.userAvatarsCacheKey(userId));
 
