@@ -9,6 +9,7 @@ import { RefreshTokenDto } from '../auth/dto/refresh-token.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { ActiveUsersDto } from './dto/active-users.dto';
+import { separateFields } from 'src/common/utils/separate-field';
 
 @Injectable()
 export class UsersService {
@@ -138,25 +139,7 @@ export class UsersService {
       'description',
     ] as const;
 
-    type UpdatableField = (typeof allowedFields)[number];
-    type ChangedFields = Partial<Pick<User, UpdatableField>>;
-
-    const changedFields: ChangedFields = {};
-
-    const setChangedField = <K extends UpdatableField>(
-      key: K,
-      value: User[K],
-    ) => {
-      changedFields[key] = value;
-    };
-
-    for (const key of allowedFields) {
-      const value = updateUserDto[key];
-
-      if (value !== undefined && user[key] !== value) {
-        setChangedField(key, value);
-      }
-    }
+    const changedFields = separateFields(user, updateUserDto, allowedFields);
 
     if (Object.keys(changedFields).length === 0) {
       return user;
