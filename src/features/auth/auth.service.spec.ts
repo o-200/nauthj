@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/features/users/users.service';
+import { ConfigService } from '@nestjs/config';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn(),
@@ -41,6 +42,10 @@ describe('AuthService', () => {
       findByLogin: jest.fn(),
     };
 
+    const mockConfigService = {
+      getOrThrow: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -51,6 +56,10 @@ describe('AuthService', () => {
         {
           provide: UsersService,
           useValue: userService,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
         },
       ],
     }).compile();

@@ -5,6 +5,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AvatarsService } from './avatars.service';
 import { S3Service } from 'src/providers/files/s3/s3.service';
 import { UsersService } from '../users/users.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('AvatarsService', () => {
   let service: AvatarsService;
@@ -34,6 +35,10 @@ describe('AvatarsService', () => {
     clear: jest.fn(),
   };
 
+  const mockConfigService = {
+    getOrThrow: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -53,6 +58,10 @@ describe('AvatarsService', () => {
         {
           provide: CACHE_MANAGER,
           useValue: mockCacheManager,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
         },
       ],
     }).compile();

@@ -10,12 +10,14 @@ import { CreateUserDto } from 'src/features/users/dto/create-user.dto';
 import { UsersService } from 'src/features/users/users.service';
 import { jwtTokenDto } from './dto/jwt-token.dto';
 import { SignInDto } from './dto/sign-in.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UsersService,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(user: CreateUserDto): Promise<jwtTokenDto> {
@@ -69,7 +71,7 @@ export class AuthService {
       this.jwtService.signAsync(
         { sub: userId, email },
         {
-          secret: process.env.JWT_REFRESH_SECRET,
+          secret: this.configService.getOrThrow<string>('jwt.secret'),
           expiresIn: '7d',
         },
       ),

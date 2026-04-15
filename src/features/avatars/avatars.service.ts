@@ -11,14 +11,17 @@ import { S3Service } from 'src/providers/files/s3/s3.service';
 import { UsersService } from '../users/users.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AvatarsService {
   constructor(
     @Inject('AVATAR_REPOSITORY') private avatarRepository: Repository<Avatar>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+
     private readonly s3Service: S3Service,
     private readonly usersService: UsersService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly configService: ConfigService,
   ) {}
 
   async create(
@@ -80,7 +83,7 @@ export class AvatarsService {
     await this.cacheManager.set(
       this.userAvatarsCacheKey(userId),
       avatars,
-      60000,
+      this.configService.getOrThrow<number>('cache.ttl'),
     );
     return avatars;
   }
