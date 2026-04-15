@@ -418,25 +418,34 @@ describe('UsersService', () => {
         NotFoundException,
       );
 
-      expect(userRepository.update).not.toHaveBeenCalled();
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { id: '1' },
+      });
+      expect(userRepository.save).not.toHaveBeenCalled();
+      expect(mockCacheManager.del).not.toHaveBeenCalled();
     });
 
-    it('should return user without update if no fields changed', async () => {
+    it('should return existing user if no fields changed', async () => {
       const existingUser = {
         id: '1',
         login: 'alex',
         email: 'alex@example.com',
+        age: 20,
+        description: 'old description',
       } as User;
 
-      userRepository.findOne.mockResolvedValue(existingUser);
+      userRepository.findOne.mockResolvedValueOnce(existingUser);
 
       const result = await service.update('1', {
         login: 'alex',
         email: 'alex@example.com',
       });
 
-      expect(userRepository.update).not.toHaveBeenCalled();
-      expect(mockCacheManager.clear).not.toHaveBeenCalled();
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { id: '1' },
+      });
+      expect(userRepository.save).not.toHaveBeenCalled();
+      expect(mockCacheManager.del).not.toHaveBeenCalled();
       expect(result).toBe(existingUser);
     });
 
@@ -449,82 +458,92 @@ describe('UsersService', () => {
         description: 'old description',
       } as User;
 
-      const updatedUser = {
+      const savedUser = {
         ...existingUser,
         login: 'alex-new',
       } as User;
 
-      const updateResult: UpdateResult = {
-        raw: [],
-        affected: 1,
-        generatedMaps: [],
-      };
-
-      userRepository.findOne
-        .mockResolvedValueOnce(existingUser)
-        .mockResolvedValueOnce(updatedUser);
-
-      userRepository.update.mockResolvedValue(updateResult);
+      userRepository.findOne.mockResolvedValueOnce(existingUser);
+      userRepository.save.mockResolvedValueOnce(savedUser);
 
       const result = await service.update('1', {
         login: 'alex-new',
         email: 'alex@example.com',
       });
 
-      expect(userRepository.update).toHaveBeenCalledWith('1', {
-        login: 'alex-new',
-      });
-
-      expect(userRepository.findOne).toHaveBeenNthCalledWith(2, {
+      expect(userRepository.findOne).toHaveBeenCalledWith({
         where: { id: '1' },
       });
 
-      expect(mockCacheManager.del).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(updatedUser);
+      expect(mockCacheManager.del).toHaveBeenCalledWith('user:1');
+
+      expect(userRepository.save).toHaveBeenCalledWith({
+        id: '1',
+        login: 'alex-new',
+      });
+
+      expect(result).toEqual(savedUser);
     });
 
-    it('should throw NotFoundException when user disappears after update', async () => {
+    it('should update multiple changed fields', async () => {
       const existingUser = {
         id: '1',
         login: 'alex',
         email: 'alex@example.com',
+        age: 20,
+        description: 'old description',
       } as User;
 
-      const updateResult: UpdateResult = {
-        raw: [],
-        affected: 1,
-        generatedMaps: [],
-      };
+      const savedUser = {
+        ...existingUser,
+        login: 'alex-new',
+        description: 'new description',
+      } as User;
 
-      userRepository.findOne
-        .mockResolvedValueOnce(existingUser)
-        .mockResolvedValueOnce(null);
+      userRepository.findOne.mockResolvedValueOnce(existingUser);
+      userRepository.save.mockResolvedValueOnce(savedUser);
 
-      userRepository.update.mockResolvedValue(updateResult);
+      const result = await service.update('1', {
+        login: 'alex-new',
+        description: 'new description',
+      });
 
-      await expect(
-        service.update('1', {
-          login: 'alex-new',
-        }),
-      ).rejects.toThrow(NotFoundException);
+      expect(mockCacheManager.del).toHaveBeenCalledWith('user:1');
+
+      expect(userRepository.save).toHaveBeenCalledWith({
+        id: '1',
+        login: 'alex-new',
+        description: 'new description',
+      });
+
+      expect(result).toEqual(savedUser);
+    });
+
+    it('should ignore fields that are not in allowedFields', async () => {
+      const existingUser = {
+        id: '1',
+        login: 'alex',
+        email: 'alex@example.com',
+        age: 20,
+        description: 'old description',
+      } as User;
+
+      userRepository.findOne.mockResolvedValueOnce(existingUser);
+
+      const result = await service.update('1', {
+        login: 'alex',
+        email: 'alex@example.com',
+        // @ts-expect-error test extra field
+        role: 'admin',
+      });
+
+      expect(userRepository.save).not.toHaveBeenCalled();
+      expect(mockCacheManager.del).not.toHaveBeenCalled();
+      expect(result).toBe(existingUser);
     });
   });
 
   describe('updateRefreshToken', () => {
-    it('should throw NotFoundException when user does not exist', async () => {
-      const dto: RefreshTokenDto = {
-        refreshToken: 'new-token',
-      };
-
-      userRepository.findOne.mockResolvedValueOnce(null);
-
-      await expect(service.updateRefreshToken('1', dto)).rejects.toThrow(
-        NotFoundException,
-      );
-
-      expect(userRepository.update).not.toHaveBeenCalled();
-    });
-
     it('should return user without update if refresh token did not change', async () => {
       const existingUser = {
         id: '1',

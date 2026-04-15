@@ -145,18 +145,8 @@ export class UsersService {
       return user;
     }
 
-    await this.userRepository.update(userId, changedFields);
-
-    const updatedUser = await this.userRepository.findOne({
-      where: { id: userId },
-    });
-
-    if (!updatedUser) {
-      throw new NotFoundException('User not found after update');
-    }
-
     await this.cacheManager.del(this.userCacheKey(userId));
-    return updatedUser;
+    return this.userRepository.save({ id: userId, ...changedFields });
   }
 
   async update_balance(userId: string, balance_cents: bigint) {
