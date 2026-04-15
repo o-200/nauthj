@@ -3,15 +3,18 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Patch,
+  Post,
   Query,
-  Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -23,12 +26,21 @@ import { PaginationDto } from './dto/pagination.dto';
 import { SearchFilterDto } from './dto/search-filter.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { Cache, CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
+import { ActiveUsersDto } from './dto/active-users.dto';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
+@Controller('users')
+@UseInterceptors(CacheInterceptor)
 @ApiTags('Users')
 @ApiBearerAuth()
-@Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectQueue('users') private readonly usersQueue: Queue,
+  ) {}
 
   @Get()
   @UseGuards(JwtAuthGuard)
@@ -46,6 +58,35 @@ export class UsersController {
     return this.usersService.findAll(paginationDto, searchFilterDto);
   }
 
+  @Get('active')
+  @ApiOperation({
+    summary: 'Get active users',
+    description:
+      'Returns users with non-null description and at least 2 avatars. Optional filtering by age range.',
+  })
+  @ApiQuery({
+    name: 'ageMin',
+    required: false,
+    type: Number,
+    example: 18,
+    description: 'Minimum age (inclusive)',
+  })
+  @ApiQuery({
+    name: 'ageMax',
+    required: false,
+    type: Number,
+    example: 30,
+    description: 'Maximum age (inclusive)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of active users',
+    type: [User],
+  })
+  findActive(@Query() activeUsersDto: ActiveUsersDto) {
+    return this.usersService.findActive(activeUsersDto);
+  }
+
   @Patch('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
@@ -57,8 +98,8 @@ export class UsersController {
   })
   @ApiBody({ type: UpdateUserDto })
   update(
-    @CurrentUser() user: { userId: string, email: string },
-    @Body() updateUserDto: UpdateUserDto
+    @CurrentUser() user: { userId: string; email: string },
+    @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(user.userId, updateUserDto);
   }
@@ -74,9 +115,14 @@ export class UsersController {
       example: { message: 'User was deleted' },
     },
   })
-  async remove(@CurrentUser() user: { userId: string, email: string }) {
+  async remove(@CurrentUser() user: { userId: string; email: string }) {
     await this.usersService.delete(user.userId);
-
     return { message: 'User was deleted' };
+  }
+
+  @Post('reset-balances')
+  async resetBalances() {
+    await this.usersQueue.add('resetBalances', {});
+    return { message: 'Reset Balances job added to queue' };
   }
 }

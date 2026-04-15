@@ -6,10 +6,15 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Avatar } from 'src/features/avatars/entities/avatar.entity';
 
 @Entity()
+// @Index('idx_user_created_at_not_deleted', ['createdAt'], {
+//  where: '"deletedAt IS NULL"',
+//})
 export class User {
   @ApiProperty({
     example: '512cf215-61b6-4725-a796-51bf087522a50',
@@ -26,6 +31,19 @@ export class User {
   @Column({ length: 64 })
   @Index({ unique: true })
   login: string;
+
+  @ApiProperty({
+    example: 1500,
+    description: 'User balance in cents',
+    minimum: 0,
+    default: 1000,
+  })
+  @Column({
+    name: 'balance_cents',
+    type: 'bigint',
+    default: '100000', // for testing purposes
+  })
+  balanceCents: string;
 
   @ApiProperty({
     example: 'alex@example.com',
@@ -64,6 +82,9 @@ export class User {
   })
   @Column({ type: 'text', nullable: true })
   refreshToken: string;
+
+  @OneToMany(() => Avatar, (avatar) => avatar.user)
+  avatars: Avatar[];
 
   @ApiProperty({
     example: '2026-04-02T10:00:00.000Z',

@@ -1,16 +1,28 @@
-import { createParamDecorator, ExecutionContext, UnauthorizedException } from "@nestjs/common";
+import {
+  createParamDecorator,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Request } from 'express';
 
-export const User = createParamDecorator((_data: unknown, ctx: ExecutionContext) => {
-  const request = ctx.switchToHttp().getRequest();
-  const user = request.user;
+type JwtUser = {
+  sub: string;
+  email: string;
+};
 
-  if (!user?.sub) {
-    throw new UnauthorizedException('User not found in request');
-  }
+type RequestWithUser = Request & {
+  user?: JwtUser;
+};
 
-  if (!user?.userId && !user?.email) {
-    throw new UnauthorizedException('User not found in request');
-  }
+export const User = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): JwtUser => {
+    const request = ctx.switchToHttp().getRequest<RequestWithUser>();
+    const user = request.user;
 
-  return user
-});
+    if (!user?.sub || !user.email) {
+      throw new UnauthorizedException('User not found in request');
+    }
+
+    return user;
+  },
+);

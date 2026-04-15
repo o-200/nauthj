@@ -7,4 +7,4 @@ import { RefreshTokenDto } from './refresh-token.dto';
 export class jwtTokenDto extends IntersectionType(
   AccessTokenDto,
   RefreshTokenDto,
-) { }
+) {}

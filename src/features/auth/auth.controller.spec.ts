@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/features/users/dto/create-user.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -9,6 +10,13 @@ describe('AuthController', () => {
     register: jest.Mock;
     signIn: jest.Mock;
     getMe: jest.Mock;
+  };
+
+  const mockCacheManager = {
+    get: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+    clear: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -24,6 +32,10 @@ describe('AuthController', () => {
         {
           provide: AuthService,
           useValue: authService,
+        },
+        {
+          provide: CACHE_MANAGER,
+          useValue: mockCacheManager,
         },
       ],
     }).compile();
@@ -49,7 +61,10 @@ describe('AuthController', () => {
         description: 'hello',
       };
 
-      const tokens = { accessToken: 'access-token', refreshToken: 'refresh-token' };
+      const tokens = {
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+      };
 
       authService.register.mockResolvedValue(tokens);
       const result = await controller.register(createUserDto);
