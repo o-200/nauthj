@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { jwtConfig } from 'src/config/jwt.config';
 import { UsersModule } from 'src/features/users/users.module';
 import { JwtStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
@@ -15,7 +14,8 @@ import { AuthMeCacheInterceptor } from './common/interceptors/auth-me-cache.inte
     PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => jwtConfig(configService),
+      useFactory: (configService: ConfigService) =>
+        configService.getOrThrow('jwt'),
     }),
     UsersModule,
   ],

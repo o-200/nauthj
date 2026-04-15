@@ -1,16 +1,13 @@
-import { BullRootModuleOptions } from '@nestjs/bullmq';
-import { ConfigService } from '@nestjs/config';
+import { registerAs } from '@nestjs/config';
 
-export const bullConfig = (
-  configService: ConfigService,
-): BullRootModuleOptions => ({
+export default registerAs('bull', () => ({
   connection: {
-    host: configService.getOrThrow<string>('REDIS_HOST'),
-    port: Number(configService.getOrThrow<string>('REDIS_PORT')),
-    password: configService.getOrThrow<string>('REDIS_PASSWORD'),
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+    password: process.env.REDIS_PASSWORD,
   },
   defaultJobOptions: {
     removeOnComplete: 100,
     removeOnFail: 100,
   },
-});
+}));

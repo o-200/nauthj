@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 
 import { S3Lib } from './constants/do-spaces-service-lib.constant';
 import { S3Service } from './s3.service';
-import { fileStorageConfig } from 'src/config/file.storage.config';
 import { ConfigService } from '@nestjs/config';
 
 @Module({
@@ -13,7 +12,9 @@ import { ConfigService } from '@nestjs/config';
       provide: S3Lib,
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        return new AWS.S3(fileStorageConfig(configService));
+        const fsConfig =
+          configService.getOrThrow<AWS.S3ClientConfig>('fileStorage');
+        return new AWS.S3(fsConfig);
       },
     },
   ],

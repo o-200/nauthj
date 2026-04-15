@@ -1,10 +1,10 @@
-import { ConfigService } from '@nestjs/config';
+import { registerAs } from '@nestjs/config';
 
-export const fileStorageConfig = (configService: ConfigService) => ({
-  endpoint: configService.getOrThrow<string>('MINIO_ENDPOINT'),
-  region: configService.getOrThrow<string>('MINIO_REGION'),
+export default registerAs('fileStorage', () => ({
+  endpoint: process.env.MINIO_ENDPOINT,
+  region: process.env.MINIO_REGION,
   credentials: {
-    accessKeyId: configService.getOrThrow<string>('MINIO_ACCESS_KEY'),
-    secretAccessKey: configService.getOrThrow<string>('MINIO_SECRET_KEY'),
+    accessKeyId: process.env.MINIO_ACCESS_KEY,
+    secretAccessKey: process.env.MINIO_SECRET_KEY,
   },
-});
+}));

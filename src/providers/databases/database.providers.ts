@@ -1,19 +1,20 @@
 import { ConfigService } from '@nestjs/config';
-import { databaseSourceOptions } from 'src/config/database.source.options';
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { TypeOrmCustomLogger } from '../../common/logger/typeorm-logger.service';
 
 export const databaseProviders = [
   {
     provide: 'DATA_SOURCE',
     inject: [ConfigService, TypeOrmCustomLogger],
-    useFactory: (
+    useFactory: async (
       configService: ConfigService,
       customLogger: TypeOrmCustomLogger,
     ) => {
-      const dataSource = new DataSource(
-        databaseSourceOptions(configService, customLogger),
-      );
+      const dataSource = new DataSource({
+        ...configService.getOrThrow<DataSourceOptions>('database'),
+        logger: customLogger,
+      });
+
       return dataSource.initialize();
     },
   },
