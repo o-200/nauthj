@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolvePackageJsonExports": false,
+    "types": ["jest", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "src/*": ["src/*"],
+      "@common/common": ["../../libs/common/src"],
+      "@common/common/*": ["../../libs/common/src/*"],
+    },
+  },
+  "include": ["src/**/*.ts", "src/**/*.spec.ts"],
+}

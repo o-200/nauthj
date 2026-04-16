@@ -1,0 +1,1 @@
+docker compose up -d && nest start notification-service
