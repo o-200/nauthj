@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { databaseProviders } from './database.providers';
-import { LoggerModule } from '../../common/logger/logger.module';
+import { LoggerModule } from 'libs/logger/logger.module';
 
 @Module({
   imports: [LoggerModule],

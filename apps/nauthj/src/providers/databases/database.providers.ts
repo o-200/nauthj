@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
+import { TypeOrmCustomLogger } from 'libs/logger/typeorm-logger.service';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { TypeOrmCustomLogger } from '../../common/logger/typeorm-logger.service';
 
 export const databaseProviders = [
   {

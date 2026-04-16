@@ -2,13 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ApplicationLogger } from './common/logger/logger.service';
-import { RequestLoggingInterceptor } from './common/logger/request-logging.interceptor';
-import { ExceptionLoggingFilter } from './common/logger/exception-logging.filter';
 import {
   bearerAuthOptions,
   bearerAuthName,
 } from './config/swagger/bearer-auth.config';
+import { ApplicationLogger } from 'libs/logger/logger.service';
+import { RequestLoggingInterceptor } from 'libs/logger/request-logging.interceptor';
+import { ExceptionLoggingFilter } from 'libs/logger/exception-logging.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
