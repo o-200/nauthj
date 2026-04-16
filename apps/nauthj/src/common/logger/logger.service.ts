@@ -11,32 +11,46 @@ export class ApplicationLogger implements LoggerService {
 
   log(message: string, context?: string, meta?: LogContext): void {
     const resolvedContext = context ?? this.defaultContext;
-    const formattedMessage = this.formatMessage(message, resolvedContext, meta);
-    Logger.log(formattedMessage, resolvedContext);
+    Logger.log(
+      this.formatMessage(message, resolvedContext, meta),
+      resolvedContext,
+    );
   }
 
   error(message: string, context?: string, meta?: LogContext): void {
     const resolvedContext = context ?? this.defaultContext;
     const formattedMessage = this.formatMessage(message, resolvedContext, meta);
+
+    if (meta?.stack) {
+      Logger.error(`${formattedMessage}\n${meta.stack}`, resolvedContext);
+      return;
+    }
+
     Logger.error(formattedMessage, resolvedContext);
   }
 
   warn(message: string, context?: string, meta?: LogContext): void {
     const resolvedContext = context ?? this.defaultContext;
-    const formattedMessage = this.formatMessage(message, resolvedContext, meta);
-    Logger.warn(formattedMessage, resolvedContext);
+    Logger.warn(
+      this.formatMessage(message, resolvedContext, meta),
+      resolvedContext,
+    );
   }
 
   debug(message: string, context?: string, meta?: LogContext): void {
     const resolvedContext = context ?? this.defaultContext;
-    const formattedMessage = this.formatMessage(message, resolvedContext, meta);
-    Logger.debug(formattedMessage, resolvedContext);
+    Logger.debug(
+      this.formatMessage(message, resolvedContext, meta),
+      resolvedContext,
+    );
   }
 
   verbose(message: string, context?: string, meta?: LogContext): void {
     const resolvedContext = context ?? this.defaultContext;
-    const formattedMessage = this.formatMessage(message, resolvedContext, meta);
-    Logger.verbose(formattedMessage, resolvedContext);
+    Logger.verbose(
+      this.formatMessage(message, resolvedContext, meta),
+      resolvedContext,
+    );
   }
 
   private formatMessage(

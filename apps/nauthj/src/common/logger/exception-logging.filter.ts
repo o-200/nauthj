@@ -24,36 +24,27 @@ export class ExceptionLoggingFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const message =
-      exception instanceof HttpException
-        ? exception.message
-        : 'Internal server error';
+      exception instanceof Error ? exception.message : 'Internal server error';
 
     const requestId = request.requestId || '-';
     const method = request.method;
     const path = request.url;
     const ip = request.ip || 'unknown';
 
-    const errorContext = {
+    const stack = exception instanceof Error ? exception.stack : undefined;
+
+    this.logger.error(`Request failed: ${message}`, 'HTTP', {
       requestId,
       method,
       path,
       statusCode: status,
       ip,
-    };
-
-    let stack: string | undefined;
-    if (exception instanceof Error) {
-      stack = exception.stack;
-    }
-
-    this.logger.error(`Request failed: ${message}`, 'HTTP', {
-      ...errorContext,
-      stack,
+      stack: status >= 500 ? stack : undefined,
     });
 
     response.status(status).json({
       statusCode: status,
-      message,
+      message: status >= 500 ? 'Internal server error' : message,
       requestId,
       timestamp: new Date().toISOString(),
       path,
