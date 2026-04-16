@@ -1,5 +1,5 @@
-import { DataSource } from 'typeorm';
 import { Avatar } from 'apps/nauthj/src/features/avatars/entities/avatar.entity';
+import { DataSource } from 'typeorm';
 
 export const avatarsProviders = [
   {

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User } from 'apps/nauthj/src/features/users/jobs/entities/user.entity';
+import { User } from 'apps/nauthj/src/features/users/entities/user.entity';
 import { CreateUserDto } from 'apps/nauthj/src/features/users/dto/create-user.dto';
 import { UsersService } from 'apps/nauthj/src/features/users/users.service';
 import { jwtTokenDto } from './dto/jwt-token.dto';

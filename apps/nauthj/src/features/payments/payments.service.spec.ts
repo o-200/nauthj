@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { PaymentsService } from './payments.service';
 import { Payment } from './entities/payment.entity';
-import { User } from '../users/jobs/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 
 type MockUserRepository = Pick<Repository<User>, 'save'>;

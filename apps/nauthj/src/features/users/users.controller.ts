@@ -25,7 +25,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PaginationDto } from './dto/pagination.dto';
 import { SearchFilterDto } from './dto/search-filter.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './jobs/entities/user.entity';
+import { User } from './entities/user.entity';
 import { Cache, CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
 import { ActiveUsersDto } from './dto/active-users.dto';
 import { InjectQueue } from '@nestjs/bullmq';

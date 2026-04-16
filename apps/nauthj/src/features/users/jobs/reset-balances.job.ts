@@ -2,7 +2,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource, In } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User } from '../entities/user.entity';
 import { UsersService } from '../users.service';
 import { PaginationDto } from '../dto/pagination.dto';
 import { SearchFilterDto } from '../dto/search-filter.dto';

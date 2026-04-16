@@ -1,5 +1,5 @@
-import { DataSource } from 'typeorm';
 import { Payment } from 'apps/nauthj/src/features/payments/entities/payment.entity';
+import { DataSource } from 'typeorm';
 
 export const paymentsProviders = [
   {

@@ -7,7 +7,7 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { UsersService } from './users.service';
-import { User } from './jobs/entities/user.entity';
+import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RefreshTokenDto } from '../auth/dto/refresh-token.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';

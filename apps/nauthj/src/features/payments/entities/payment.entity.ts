@@ -8,7 +8,7 @@ import {
   Index,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from 'apps/nauthj/src/features/users/jobs/entities/user.entity';
+import { User } from 'apps/nauthj/src/features/users/entities/user.entity';
 
 @Entity('payments')
 @Index('idx_payment_from_user', ['fromUser'])

@@ -1,4 +1,4 @@
-import { User } from 'apps/nauthj/src/features/users/jobs/entities/user.entity';
+import { User } from 'apps/nauthj/src/features/users/entities/user.entity';
 import { DataSource } from 'typeorm';
 
 export const usersProviders = [

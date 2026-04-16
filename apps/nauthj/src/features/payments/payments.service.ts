@@ -7,7 +7,7 @@ import {
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Payment } from './entities/payment.entity';
 import { DataSource } from 'typeorm';
-import { User } from '../users/jobs/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class PaymentsService {

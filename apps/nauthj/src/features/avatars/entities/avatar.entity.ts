@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { User } from 'apps/nauthj/src/features/users/jobs/entities/user.entity';
+import { User } from 'apps/nauthj/src/features/users/entities/user.entity';
 
 @Entity()
 // @Index('idx_avatar_user_id_not_deleted', ['user_id'], {
