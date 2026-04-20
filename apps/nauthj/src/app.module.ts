@@ -10,7 +10,7 @@ import bullConfig from './config/bull.config';
 import cacheConfig from './config/cache.config';
 import databaseConfig from './config/database.config';
 import fileStorageConfig from './config/file.storage.config';
-import jwtConfig from './config/jwt.config';
+import jwtConfig from 'libs/config/jwt.config';
 import { CommonModule } from '@common/common';
 import { LoggerModule } from 'libs/logger/logger.module';
 
