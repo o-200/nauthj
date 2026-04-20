@@ -2,8 +2,15 @@ import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtVerifyService } from '@common/common/auth/jwt.service';
 import { NotificationsGateway } from './notifications.gateway';
-import { Server, Socket } from 'socket.io';
+import { DefaultEventsMap, Server, Socket } from 'socket.io';
 import { SocketData } from './common/socket.data';
+
+type TestSocket = Socket<
+  DefaultEventsMap,
+  DefaultEventsMap,
+  DefaultEventsMap,
+  SocketData
+>;
 
 describe('NotificationsGateway', () => {
   let gateway: NotificationsGateway;
@@ -11,12 +18,14 @@ describe('NotificationsGateway', () => {
 
   const createClient = (
     overrides?: Partial<
-      Socket<any, any, any, SocketData> & {
+      TestSocket & {
         handshake: { headers: { authorization?: string } };
+        disconnect: jest.Mock;
+        join: jest.Mock<Promise<void>, [string]>;
       }
     >,
-  ) => {
-    return {
+  ): TestSocket => {
+    const client = {
       id: 'client-1',
       handshake: {
         headers: {
@@ -26,8 +35,14 @@ describe('NotificationsGateway', () => {
       data: {},
       disconnect: jest.fn(),
       join: jest.fn().mockResolvedValue(undefined),
+      emit: jest.fn(),
+      on: jest.fn(),
+    };
+
+    return {
+      ...client,
       ...overrides,
-    } as unknown as Socket<any, any, any, SocketData>;
+    } as unknown as TestSocket;
   };
 
   beforeEach(async () => {
@@ -97,7 +112,6 @@ describe('NotificationsGateway', () => {
       expect(jwtVerifyService.verify).toHaveBeenCalledWith('Bearer token');
       expect(client.data.userId).toBe('user-123');
       expect(client.join).toHaveBeenCalledWith('user-123');
-
       expect(logSpy).toHaveBeenCalledWith('Client id: client-1 connected');
       expect(debugSpy).toHaveBeenCalledWith('Number of connected clients: 2');
       expect(debugSpy).toHaveBeenCalledWith('User id: user-123');
@@ -154,14 +168,14 @@ describe('NotificationsGateway', () => {
         .spyOn(Logger.prototype, 'debug')
         .mockImplementation(() => undefined);
 
-      const payload = { hello: 'world' };
+      const payload: Record<string, string> = { hello: 'world' };
 
       const result = gateway.handleMessage(client, payload);
 
       expect(logSpy).toHaveBeenCalledWith(
         'Message received from client id: client-1',
       );
-      expect(debugSpy).toHaveBeenCalledWith(`Payload: ${payload}`);
+      expect(debugSpy).toHaveBeenCalledWith('Payload: [object Object]');
 
       expect(result).toEqual({
         event: 'pong',
