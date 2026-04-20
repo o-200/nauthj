@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common';
-import { NotificationServiceController } from './notification-service.controller';
-import { NotificationServiceService } from './notification-service.service';
+import { ConfigModule } from '@nestjs/config';
+import { NotificationsModule } from './features/notifications/notifications.module';
+import jwtConfig from 'libs/config/jwt.config';
 
 @Module({
-  imports: [],
-  controllers: [NotificationServiceController],
-  providers: [NotificationServiceService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [jwtConfig],
+    }),
+    NotificationsModule,
+  ],
 })
 export class NotificationServiceModule {}
