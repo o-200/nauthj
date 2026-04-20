@@ -51,6 +51,7 @@ export class NotificationsGateway
     this.logger.log(`Client id: ${client.id} connected`);
     this.logger.debug(`Number of connected clients: ${sockets.size}`);
 
+    this.logger.debug(`User id: ${client.data.userId}`);
     await client.join(client.data.userId);
   }
 
@@ -66,5 +67,10 @@ export class NotificationsGateway
       event: 'pong',
       data: 'Wrong data that will make the test fail',
     };
+  }
+
+  sendNotification(userId: string) {
+    this.logger.debug(`Sending notification to user id: ${userId}`);
+    this.io.to(userId).emit('notification', { data: 'hello!' });
   }
 }

@@ -4,6 +4,7 @@ import { NotificationsGateway } from './notifications.gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtVerifyService } from '@common/common/auth/jwt.service';
+import { NotificationsController } from './notifications.controller';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { JwtVerifyService } from '@common/common/auth/jwt.service';
       }),
     }),
   ],
+  controllers: [NotificationsController],
   providers: [NotificationsService, NotificationsGateway, JwtVerifyService],
 })
 export class NotificationsModule {}
