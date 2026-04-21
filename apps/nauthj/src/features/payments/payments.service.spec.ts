@@ -1,10 +1,13 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ClientKafka } from '@nestjs/microservices';
+import { of } from 'rxjs';
 import {
   DataSource,
   EntityManager,
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
+
 import { PaymentsService } from './payments.service';
 import { Payment } from './entities/payment.entity';
 import { User } from '../users/entities/user.entity';
@@ -18,6 +21,8 @@ type MockQueryBuilder = Pick<
   'setLock' | 'where' | 'getOne'
 >;
 
+type MockPaymentService = Pick<ClientKafka, 'emit' | 'connect'>;
+
 describe('PaymentsService', () => {
   let service: PaymentsService;
   let dataSource: jest.Mocked<DataSource>;
@@ -25,6 +30,7 @@ describe('PaymentsService', () => {
   let userRepository: jest.Mocked<MockUserRepository>;
   let paymentRepository: jest.Mocked<MockPaymentRepository>;
   let manager: jest.Mocked<EntityManager>;
+  let paymentService: jest.Mocked<MockPaymentService>;
 
   let senderQueryBuilder: jest.Mocked<MockQueryBuilder>;
   let recipientQueryBuilder: jest.Mocked<MockQueryBuilder>;
@@ -81,7 +87,15 @@ describe('PaymentsService', () => {
       transaction: jest.fn(),
     } as unknown as jest.Mocked<DataSource>;
 
-    service = new PaymentsService(dataSource);
+    paymentService = {
+      emit: jest.fn().mockReturnValue(of(undefined)),
+      connect: jest.fn().mockResolvedValue(undefined),
+    };
+
+    service = new PaymentsService(
+      dataSource,
+      paymentService as unknown as ClientKafka,
+    );
 
     let createQueryBuilderCall = 0;
 
@@ -116,6 +130,12 @@ describe('PaymentsService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('should connect kafka client on module init', async () => {
+    await service.onModuleInit();
+
+    expect(paymentService.connect).toHaveBeenCalledTimes(1);
   });
 
   it('should create payment and transfer money', async () => {
@@ -170,6 +190,12 @@ describe('PaymentsService', () => {
       amount_cents: '1000',
     });
 
+    expect(paymentService.emit).toHaveBeenCalledWith('payments.created', {
+      fromUserId: senderId,
+      toUserId: recipientId,
+      amount: 10,
+    });
+
     expect(paymentRepository.save).toHaveBeenCalledWith(payment);
     expect(result).toBe(payment);
   });
@@ -185,6 +211,7 @@ describe('PaymentsService', () => {
     );
 
     expect(dataSource.transaction).not.toHaveBeenCalled();
+    expect(paymentService.emit).not.toHaveBeenCalled();
   });
 
   it('should throw if amount is not greater than 0', async () => {
@@ -198,6 +225,7 @@ describe('PaymentsService', () => {
     );
 
     expect(dataSource.transaction).not.toHaveBeenCalled();
+    expect(paymentService.emit).not.toHaveBeenCalled();
   });
 
   it('should throw if amount is not finite', async () => {
@@ -211,6 +239,7 @@ describe('PaymentsService', () => {
     );
 
     expect(dataSource.transaction).not.toHaveBeenCalled();
+    expect(paymentService.emit).not.toHaveBeenCalled();
   });
 
   it('should throw if sender not found', async () => {
@@ -223,6 +252,7 @@ describe('PaymentsService', () => {
     expect(recipientQueryBuilder.getOne).not.toHaveBeenCalled();
     expect(userRepository.save).not.toHaveBeenCalled();
     expect(paymentRepository.save).not.toHaveBeenCalled();
+    expect(paymentService.emit).not.toHaveBeenCalled();
   });
 
   it('should throw if recipient not found', async () => {
@@ -240,13 +270,14 @@ describe('PaymentsService', () => {
 
     expect(userRepository.save).not.toHaveBeenCalled();
     expect(paymentRepository.save).not.toHaveBeenCalled();
+    expect(paymentService.emit).not.toHaveBeenCalled();
   });
 
   it('should throw if sender balance is insufficient', async () => {
     const sender = createUser({
       id: senderId,
       balanceCents: '500',
-    }); // 5.00
+    });
 
     const recipient = createUser({
       id: recipientId,
@@ -265,5 +296,6 @@ describe('PaymentsService', () => {
     expect(userRepository.save).not.toHaveBeenCalled();
     expect(paymentRepository.create).not.toHaveBeenCalled();
     expect(paymentRepository.save).not.toHaveBeenCalled();
+    expect(paymentService.emit).not.toHaveBeenCalled();
   });
 });

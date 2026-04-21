@@ -32,7 +32,7 @@ describe('NotificationsGateway', () => {
           authorization: 'Bearer token',
         },
       },
-      data: {},
+      data: {} as SocketData,
       disconnect: jest.fn(),
       join: jest.fn().mockResolvedValue(undefined),
       emit: jest.fn(),
@@ -168,7 +168,7 @@ describe('NotificationsGateway', () => {
         .spyOn(Logger.prototype, 'debug')
         .mockImplementation(() => undefined);
 
-      const payload: Record<string, string> = { hello: 'world' };
+      const payload = { hello: 'world' };
 
       const result = gateway.handleMessage(client, payload);
 
@@ -196,7 +196,7 @@ describe('NotificationsGateway', () => {
         to,
       } as unknown as Server;
 
-      gateway.sendNotification('user-123');
+      gateway.sendNotification('user-123', 'hello!');
 
       expect(debugSpy).toHaveBeenCalledWith(
         'Sending notification to user id: user-123',

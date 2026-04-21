@@ -69,8 +69,8 @@ export class NotificationsGateway
     };
   }
 
-  sendNotification(userId: string) {
+  sendNotification<T>(userId: string, data: T) {
     this.logger.debug(`Sending notification to user id: ${userId}`);
-    this.io.to(userId).emit('notification', { data: 'hello!' });
+    this.io.to(userId).emit('notification', { data: data });
   }
 }

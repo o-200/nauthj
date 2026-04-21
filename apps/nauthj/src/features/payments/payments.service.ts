@@ -8,10 +8,19 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Payment } from './entities/payment.entity';
 import { DataSource } from 'typeorm';
 import { User } from '../users/entities/user.entity';
+import { ClientKafka } from '@nestjs/microservices';
+import { PaymentsCreatedEventDto } from '@common/common/events/interfaces/payments.created';
 
 @Injectable()
 export class PaymentsService {
-  constructor(@Inject('DATA_SOURCE') private readonly dataSource: DataSource) {}
+  constructor(
+    @Inject('DATA_SOURCE') private readonly dataSource: DataSource,
+    @Inject('PAYMENT_SERVICE') private readonly paymentService: ClientKafka,
+  ) {}
+
+  async onModuleInit() {
+    await this.paymentService.connect();
+  }
 
   async create(createPaymentDto: CreatePaymentDto, senderId: string) {
     const recipientId = createPaymentDto.recipientId;
@@ -73,6 +82,14 @@ export class PaymentsService {
         toUser: recipient,
         amount_cents: amountCents.toString(),
       });
+
+      const paymentEvent: PaymentsCreatedEventDto = {
+        fromUserId: sender.id,
+        toUserId: recipient.id,
+        amount: createPaymentDto.amount,
+      };
+
+      this.paymentService.emit('payments.created', paymentEvent);
 
       return paymentRepository.save(payment);
     });
