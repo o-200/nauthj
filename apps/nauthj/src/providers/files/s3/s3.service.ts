@@ -9,6 +9,8 @@ import { UploadException } from './exceptions/upload.exception';
 import { UploadFilePayloadDto } from './dto/upload-file-payload.dto';
 import { UploadFileResultDto } from './dto/upload-file-result.dto';
 import { RemoveFilePayloadDto } from './dto/remove-file-payload.dto';
+import { ENV_KEYS } from '@common/constants/config.constants';
+import { ERROR_MESSAGES } from '@common/constants/error.constants';
 
 @Injectable()
 export class S3Service extends IFileService {
@@ -20,8 +22,9 @@ export class S3Service extends IFileService {
     private readonly configService: ConfigService,
   ) {
     super();
-    this.bucketName =
-      this.configService.getOrThrow<string>('MINIO_BUCKET_NAME');
+    this.bucketName = this.configService.getOrThrow<string>(
+      ENV_KEYS.MINIO_BUCKET_NAME,
+    );
   }
 
   private getErrorMessage(error: unknown): string {
@@ -33,7 +36,7 @@ export class S3Service extends IFileService {
       return error;
     }
 
-    return 'Unknown error';
+    return ERROR_MESSAGES.UNKNOWN_ERROR;
   }
 
   async uploadFile(

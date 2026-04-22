@@ -7,12 +7,13 @@ import { BullModule } from '@nestjs/bullmq';
 import { UsersProcessor } from './users.processor';
 import { ResetBalancesJob } from './jobs/reset-balances.job';
 import { CommonService } from '@common/common';
+import { QUEUE_NAMES } from '@common/constants/queue.constants';
 
 @Module({
   imports: [
     DatabasesModule,
     BullModule.registerQueue({
-      name: 'users',
+      name: QUEUE_NAMES.USERS,
     }),
   ],
   controllers: [UsersController],

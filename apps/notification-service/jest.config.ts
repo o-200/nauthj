@@ -25,6 +25,8 @@ const config: Config = {
     '^apps/nauthj/src/(.*)$': '<rootDir>/src/$1',
     '^@common/common$': '<rootDir>/../../libs/common/src',
     '^@common/common/(.*)$': '<rootDir>/../../libs/common/src/$1',
+    '^@common/constants$': '<rootDir>/../../libs/common/constants',
+    '^@common/constants/(.*)$': '<rootDir>/../../libs/common/constants/$1',
   },
 };
 

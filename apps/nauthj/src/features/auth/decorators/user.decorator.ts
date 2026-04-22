@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { ERROR_MESSAGES } from '@common/constants/error.constants';
 
 type JwtUser = {
   sub: string;
@@ -20,7 +21,7 @@ export const User = createParamDecorator(
     const user = request.user;
 
     if (!user?.sub || !user.email) {
-      throw new UnauthorizedException('User not found in request');
+      throw new UnauthorizedException(ERROR_MESSAGES.USER_NOT_FOUND_IN_REQUEST);
     }
 
     return user;

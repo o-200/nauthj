@@ -12,11 +12,16 @@ import { UsersService } from '../users/users.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { ConfigService } from '@nestjs/config';
+import { CACHE_KEYS } from '@common/constants/cache.constants';
+import { CONFIG_KEYS } from '@common/constants/config.constants';
+import { INJECTION_TOKENS } from '@common/constants/tokens.constants';
+import { ERROR_MESSAGES } from '@common/constants/error.constants';
 
 @Injectable()
 export class AvatarsService {
   constructor(
-    @Inject('AVATAR_REPOSITORY') private avatarRepository: Repository<Avatar>,
+    @Inject(INJECTION_TOKENS.AVATAR_REPOSITORY)
+    private avatarRepository: Repository<Avatar>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
 
     private readonly s3Service: S3Service,
@@ -33,7 +38,7 @@ export class AvatarsService {
 
     const user = await this.usersService.findById(userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
     const avatarsCount = await this.avatarRepository.count({
@@ -45,7 +50,7 @@ export class AvatarsService {
     });
 
     if (avatarsCount >= 5) {
-      throw new BadRequestException('User can only have maximum 5 avatars');
+      throw new BadRequestException(ERROR_MESSAGES.USER_MAX_AVATARS);
     }
 
     const uploadFileResult = await this.s3Service.uploadFile(uploadDto, file);
@@ -83,7 +88,7 @@ export class AvatarsService {
     await this.cacheManager.set(
       this.userAvatarsCacheKey(userId),
       avatars,
-      this.configService.getOrThrow<number>('cache.ttl'),
+      this.configService.getOrThrow<number>(CONFIG_KEYS.CACHE_TTL),
     );
     return avatars;
   }
@@ -93,10 +98,12 @@ export class AvatarsService {
       where: { id: avatarId },
     });
     if (!avatar) {
-      throw new NotFoundException('Avatar not found');
+      throw new NotFoundException(ERROR_MESSAGES.AVATAR_NOT_FOUND);
     }
     if (avatar.user_id !== userId) {
-      throw new BadRequestException('That avatar isnt created by current user');
+      throw new BadRequestException(
+        ERROR_MESSAGES.AVATAR_NOT_CREATED_BY_CURRENT_USER,
+      );
     }
 
     if (avatar.filepath) {
@@ -110,6 +117,6 @@ export class AvatarsService {
   }
 
   userAvatarsCacheKey(userId: string) {
-    return `user:${userId}:avatars`;
+    return CACHE_KEYS.USER_AVATARS(userId);
   }
 }

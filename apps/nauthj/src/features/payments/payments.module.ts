@@ -5,6 +5,12 @@ import { DatabasesModule } from 'apps/nauthj/src/providers/databases/databases.m
 import { UsersModule } from '../users/users.module';
 import { paymentsProviders } from 'apps/nauthj/src/providers/databases/database_providers/payments.providers';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { INJECTION_TOKENS } from '@common/constants/tokens.constants';
+import {
+  KAFKA_BROKERS,
+  KAFKA_CLIENTS,
+  KAFKA_CONSUMER_GROUPS,
+} from '@common/constants/kafka.constants';
 
 @Module({
   imports: [
@@ -12,15 +18,15 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     UsersModule,
     ClientsModule.register([
       {
-        name: 'PAYMENT_SERVICE',
+        name: INJECTION_TOKENS.PAYMENT_SERVICE,
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'payments',
-            brokers: ['localhost:9092'],
+            clientId: KAFKA_CLIENTS.PAYMENTS,
+            brokers: [KAFKA_BROKERS.LOCALHOST],
           },
           consumer: {
-            groupId: 'payments-consumer',
+            groupId: KAFKA_CONSUMER_GROUPS.PAYMENTS_CONSUMER,
           },
         },
       },

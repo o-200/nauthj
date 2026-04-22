@@ -1,6 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from 'apps/nauthj/src/features/auth/common/interfaces/jwt.payload';
+import { ERROR_MESSAGES } from '@common/constants/error.constants';
+import { AUTH_SCHEMES } from '@common/constants/events.constants';
 
 @Injectable()
 export class JwtVerifyService {
@@ -8,13 +10,17 @@ export class JwtVerifyService {
 
   async verify(token?: string): Promise<string> {
     if (!token) {
-      throw new UnauthorizedException('Authorization header is missing');
+      throw new UnauthorizedException(
+        ERROR_MESSAGES.AUTHORIZATION_HEADER_MISSING,
+      );
     }
 
     const [type, value] = token.split(' ');
 
-    if (type !== 'Bearer' || !value) {
-      throw new UnauthorizedException('Invalid authorization header');
+    if (type !== AUTH_SCHEMES.BEARER || !value) {
+      throw new UnauthorizedException(
+        ERROR_MESSAGES.INVALID_AUTHORIZATION_HEADER,
+      );
     }
 
     const payload = await this.jwtService.verifyAsync<JwtPayload>(value);

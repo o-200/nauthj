@@ -1,8 +1,9 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { ResetBalancesJob } from './jobs/reset-balances.job';
+import { QUEUE_JOBS, QUEUE_NAMES } from '@common/constants/queue.constants';
 
-@Processor('users')
+@Processor(QUEUE_NAMES.USERS)
 export class UsersProcessor extends WorkerHost {
   constructor(private readonly resetBalancesJob: ResetBalancesJob) {
     super();
@@ -10,7 +11,7 @@ export class UsersProcessor extends WorkerHost {
 
   async process(job: Job): Promise<unknown> {
     switch (job.name) {
-      case 'resetBalances':
+      case QUEUE_JOBS.RESET_BALANCES:
         await this.resetBalancesJob.execute();
         return;
 

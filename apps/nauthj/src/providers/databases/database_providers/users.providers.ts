@@ -1,10 +1,11 @@
 import { User } from 'apps/nauthj/src/features/users/entities/user.entity';
 import { DataSource } from 'typeorm';
+import { INJECTION_TOKENS } from '@common/constants/tokens.constants';
 
 export const usersProviders = [
   {
-    provide: 'USER_REPOSITORY',
+    provide: INJECTION_TOKENS.USER_REPOSITORY,
     useFactory: (dataSource: DataSource) => dataSource.getRepository(User),
-    inject: ['DATA_SOURCE'],
+    inject: [INJECTION_TOKENS.DATA_SOURCE],
   },
 ];

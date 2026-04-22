@@ -9,6 +9,7 @@ import {
 import { ApplicationLogger } from 'libs/logger/logger.service';
 import { RequestLoggingInterceptor } from 'libs/logger/request-logging.interceptor';
 import { ExceptionLoggingFilter } from 'libs/logger/exception-logging.filter';
+import { ENV_KEYS } from '@common/constants/config.constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -31,7 +32,7 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
 
-  await app.listen(process.env.NAUTHJ_PORT ?? 3000);
+  await app.listen(process.env[ENV_KEYS.NAUTHJ_PORT] ?? 3000);
 }
 
 bootstrap().catch((err) => {

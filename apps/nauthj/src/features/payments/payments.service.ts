@@ -10,12 +10,17 @@ import { DataSource } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { ClientKafka } from '@nestjs/microservices';
 import { PaymentsCreatedEventDto } from '@common/common/events/interfaces/payments.created';
+import { INJECTION_TOKENS } from '@common/constants/tokens.constants';
+import { KAFKA_TOPICS } from '@common/constants/kafka.constants';
+import { ERROR_MESSAGES } from '@common/constants/error.constants';
 
 @Injectable()
 export class PaymentsService {
   constructor(
-    @Inject('DATA_SOURCE') private readonly dataSource: DataSource,
-    @Inject('PAYMENT_SERVICE') private readonly paymentService: ClientKafka,
+    @Inject(INJECTION_TOKENS.DATA_SOURCE)
+    private readonly dataSource: DataSource,
+    @Inject(INJECTION_TOKENS.PAYMENT_SERVICE)
+    private readonly paymentService: ClientKafka,
   ) {}
 
   async onModuleInit() {
@@ -26,14 +31,18 @@ export class PaymentsService {
     const recipientId = createPaymentDto.recipientId;
 
     if (senderId === recipientId) {
-      throw new BadRequestException('Cannot send payment to yourself');
+      throw new BadRequestException(
+        ERROR_MESSAGES.CANNOT_SEND_PAYMENT_TO_YOURSELF,
+      );
     }
 
     if (
       !Number.isFinite(createPaymentDto.amount) ||
       createPaymentDto.amount <= 0
     ) {
-      throw new BadRequestException('Amount must be greater than 0');
+      throw new BadRequestException(
+        ERROR_MESSAGES.AMOUNT_MUST_BE_GREATER_THAN_ZERO,
+      );
     }
 
     const amountCents = BigInt(createPaymentDto.amount) * 100n;
@@ -49,7 +58,7 @@ export class PaymentsService {
         .getOne();
 
       if (!sender) {
-        throw new NotFoundException('Sender not found');
+        throw new NotFoundException(ERROR_MESSAGES.SENDER_NOT_FOUND);
       }
 
       const recipient = await userRepository
@@ -59,15 +68,13 @@ export class PaymentsService {
         .getOne();
 
       if (!recipient) {
-        throw new NotFoundException('Recipient not found');
+        throw new NotFoundException(ERROR_MESSAGES.RECIPIENT_NOT_FOUND);
       }
 
       const senderBalance = BigInt(sender.balanceCents);
 
       if (senderBalance < amountCents) {
-        throw new BadRequestException(
-          'Your balance is not sufficient to complete the transaction.',
-        );
+        throw new BadRequestException(ERROR_MESSAGES.INSUFFICIENT_BALANCE);
       }
 
       sender.balanceCents = (senderBalance - amountCents).toString();
@@ -89,7 +96,7 @@ export class PaymentsService {
         amount: createPaymentDto.amount,
       };
 
-      this.paymentService.emit('payments.created', paymentEvent);
+      this.paymentService.emit(KAFKA_TOPICS.PAYMENTS_CREATED, paymentEvent);
 
       return paymentRepository.save(payment);
     });

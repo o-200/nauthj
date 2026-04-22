@@ -10,6 +10,8 @@
       "src/*": ["src/*"],
       "@common/common": ["../../libs/common/src"],
       "@common/common/*": ["../../libs/common/src/*"],
+      "@common/constants": ["../../libs/common/constants"],
+      "@common/constants/*": ["../../libs/common/constants/*"],
     },
   },
   "include": ["src/**/*.ts", "src/**/*.spec.ts"],

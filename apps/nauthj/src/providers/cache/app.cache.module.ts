@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { CacheModule, CacheModuleAsyncOptions } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
+import { CONFIG_KEYS } from '@common/constants/config.constants';
 
 @Global()
 @Module({
@@ -8,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
     CacheModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) =>
-        configService.getOrThrow<CacheModuleAsyncOptions>('cache'),
+        configService.getOrThrow<CacheModuleAsyncOptions>(CONFIG_KEYS.CACHE),
     }),
   ],
   exports: [CacheModule],

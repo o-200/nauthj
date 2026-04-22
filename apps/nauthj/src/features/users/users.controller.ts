@@ -30,6 +30,7 @@ import { Cache, CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
 import { ActiveUsersDto } from './dto/active-users.dto';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { QUEUE_JOBS, QUEUE_NAMES } from '@common/constants/queue.constants';
 
 @Controller('users')
 @UseInterceptors(CacheInterceptor)
@@ -39,7 +40,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    @InjectQueue('users') private readonly usersQueue: Queue,
+    @InjectQueue(QUEUE_NAMES.USERS) private readonly usersQueue: Queue,
   ) {}
 
   @Get()
@@ -122,7 +123,7 @@ export class UsersController {
 
   @Post('reset-balances')
   async resetBalances() {
-    await this.usersQueue.add('resetBalances', {});
+    await this.usersQueue.add(QUEUE_JOBS.RESET_BALANCES, {});
     return { message: 'Reset Balances job added to queue' };
   }
 }

@@ -3,6 +3,7 @@ import { CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
 import { Reflector } from '@nestjs/core';
 import type { Cache } from 'cache-manager';
 import type { Request } from 'express';
+import { CACHE_KEYS } from '@common/constants/cache.constants';
 
 type RequestWithUser = Request & {
   user?: {
@@ -29,6 +30,6 @@ export class AuthMeCacheInterceptor extends CacheInterceptor {
       return undefined;
     }
 
-    return `auth:me:${userId}`;
+    return CACHE_KEYS.AUTH_ME(userId);
   }
 }

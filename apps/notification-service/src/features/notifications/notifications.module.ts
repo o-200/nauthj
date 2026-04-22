@@ -8,21 +8,28 @@ import { NotificationsController } from './notifications.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { DatabasesModule } from '../../providers/databases/databases.module';
 import { NotificationProviders } from '../../providers/databases/database_providers/notification.providers';
+import { INJECTION_TOKENS } from '@common/constants/tokens.constants';
+import {
+  KAFKA_BROKERS,
+  KAFKA_CLIENTS,
+  KAFKA_CONSUMER_GROUPS,
+} from '@common/constants/kafka.constants';
+import { CONFIG_KEYS } from '@common/constants/config.constants';
 
 @Module({
   imports: [
     DatabasesModule,
     ClientsModule.register([
       {
-        name: 'NOTIFICATION_SERVICE',
+        name: INJECTION_TOKENS.NOTIFICATION_SERVICE,
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'notification',
-            brokers: ['localhost:9092'],
+            clientId: KAFKA_CLIENTS.NOTIFICATION,
+            brokers: [KAFKA_BROKERS.LOCALHOST],
           },
           consumer: {
-            groupId: 'notification-service',
+            groupId: KAFKA_CONSUMER_GROUPS.NOTIFICATION_SERVICE,
           },
         },
       },
@@ -31,7 +38,7 @@ import { NotificationProviders } from '../../providers/databases/database_provid
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.getOrThrow<string>('jwt.secret'),
+        secret: configService.getOrThrow<string>(CONFIG_KEYS.JWT_SECRET),
       }),
     }),
   ],

@@ -11,6 +11,8 @@ import { UsersService } from 'apps/nauthj/src/features/users/users.service';
 import { jwtTokenDto } from './dto/jwt-token.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { ConfigService } from '@nestjs/config';
+import { CONFIG_KEYS } from '@common/constants/config.constants';
+import { ERROR_MESSAGES } from '@common/constants/error.constants';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +25,7 @@ export class AuthService {
   async register(user: CreateUserDto): Promise<jwtTokenDto> {
     const existingUser = await this.userService.findByEmail(user.email);
     if (existingUser) {
-      throw new BadRequestException('email already exists');
+      throw new BadRequestException(ERROR_MESSAGES.EMAIL_ALREADY_EXISTS);
     }
 
     const hashedPassword = await this.hash(user.password);
@@ -71,7 +73,7 @@ export class AuthService {
       this.jwtService.signAsync(
         { sub: userId, email },
         {
-          secret: this.configService.getOrThrow<string>('jwt.secret'),
+          secret: this.configService.getOrThrow<string>(CONFIG_KEYS.JWT_SECRET),
           expiresIn: '7d',
         },
       ),

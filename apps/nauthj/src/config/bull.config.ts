@@ -1,10 +1,14 @@
 import { registerAs } from '@nestjs/config';
+import {
+  CONFIG_NAMESPACES,
+  ENV_KEYS,
+} from '@common/constants/config.constants';
 
-export default registerAs('bull', () => ({
+export default registerAs(CONFIG_NAMESPACES.BULL, () => ({
   connection: {
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
-    password: process.env.REDIS_PASSWORD,
+    host: process.env[ENV_KEYS.REDIS_HOST],
+    port: Number(process.env[ENV_KEYS.REDIS_PORT]),
+    password: process.env[ENV_KEYS.REDIS_PASSWORD],
   },
   defaultJobOptions: {
     removeOnComplete: 100,

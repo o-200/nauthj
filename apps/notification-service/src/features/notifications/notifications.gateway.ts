@@ -11,6 +11,8 @@ import {
 import { DefaultEventsMap, Server, Socket } from 'socket.io';
 import { SocketData } from './common/socket.data';
 import { JwtVerifyService } from '@common/common/auth/jwt.service';
+import { ERROR_MESSAGES } from '@common/constants/error.constants';
+import { SOCKET_EVENTS } from '@common/constants/events.constants';
 
 @WebSocketGateway()
 export class NotificationsGateway
@@ -39,7 +41,7 @@ export class NotificationsGateway
     try {
       const authHeader = client.handshake.headers.authorization;
       if (!authHeader) {
-        throw new Error('No authorization header');
+        throw new Error(ERROR_MESSAGES.NO_AUTHORIZATION_HEADER);
       }
       console.log(authHeader);
       client.data.userId = await this.jwtVerifyService.verify(authHeader);
@@ -59,18 +61,18 @@ export class NotificationsGateway
     this.logger.log(`Cliend id:${client.id} disconnected`);
   }
 
-  @SubscribeMessage('ping')
+  @SubscribeMessage(SOCKET_EVENTS.PING)
   handleMessage(client: Socket, data: any) {
     this.logger.log(`Message received from client id: ${client.id}`);
     this.logger.debug(`Payload: ${data}`);
     return {
-      event: 'pong',
+      event: SOCKET_EVENTS.PONG,
       data: 'Wrong data that will make the test fail',
     };
   }
 
   sendNotification<T>(userId: string, data: T) {
     this.logger.debug(`Sending notification to user id: ${userId}`);
-    this.io.to(userId).emit('notification', { data: data });
+    this.io.to(userId).emit(SOCKET_EVENTS.NOTIFICATION, { data: data });
   }
 }

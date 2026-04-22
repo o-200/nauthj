@@ -21,6 +21,12 @@
       "@common/common/*": [
         "libs/common/src/*"
       ],
+      "@common/constants": [
+        "libs/common/constants"
+      ],
+      "@common/constants/*": [
+        "libs/common/constants/*"
+      ],
       "src/*": [
         "src/*"
       ]

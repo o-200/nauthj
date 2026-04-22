@@ -10,11 +10,14 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { ActiveUsersDto } from './dto/active-users.dto';
 import { CommonService } from '@common/common';
+import { CACHE_KEYS, CACHE_TTL } from '@common/constants/cache.constants';
+import { INJECTION_TOKENS } from '@common/constants/tokens.constants';
+import { ERROR_MESSAGES } from '@common/constants/error.constants';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @Inject('USER_REPOSITORY')
+    @Inject(INJECTION_TOKENS.USER_REPOSITORY)
     private userRepository: Repository<User>,
 
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -60,7 +63,9 @@ export class UsersService {
   }
 
   async findActive(activeUsersDto: ActiveUsersDto) {
-    const cachedUsers = await this.cacheManager.get<User[]>('users:active');
+    const cachedUsers = await this.cacheManager.get<User[]>(
+      CACHE_KEYS.USERS_ACTIVE,
+    );
 
     if (cachedUsers) {
       return cachedUsers;
@@ -86,7 +91,11 @@ export class UsersService {
     }
 
     const activeUsers = await queryBuilder.getMany();
-    await this.cacheManager.set('users:active', activeUsers, 60000);
+    await this.cacheManager.set(
+      CACHE_KEYS.USERS_ACTIVE,
+      activeUsers,
+      CACHE_TTL.ONE_MINUTE_MS,
+    );
 
     return activeUsers;
   }
@@ -113,7 +122,11 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const user = this.userRepository.create(createUserDto);
-    await this.cacheManager.set(this.userCacheKey(user.id), user, 60000);
+    await this.cacheManager.set(
+      this.userCacheKey(user.id),
+      user,
+      CACHE_TTL.ONE_MINUTE_MS,
+    );
 
     return this.userRepository.save(user);
   }
@@ -129,7 +142,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
     const allowedFields = [
@@ -164,7 +177,7 @@ export class UsersService {
     });
 
     if (!updatedUser) {
-      throw new NotFoundException('User not found after update');
+      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND_AFTER_UPDATE);
     }
 
     await this.cacheManager.del(this.userCacheKey(userId));
@@ -177,7 +190,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
     if (user.refreshToken === refreshTokenDto.refreshToken) {
@@ -193,7 +206,9 @@ export class UsersService {
     });
 
     if (!updatedUser) {
-      throw new NotFoundException('User not found after refresh token update');
+      throw new NotFoundException(
+        ERROR_MESSAGES.USER_NOT_FOUND_AFTER_REFRESH_TOKEN_UPDATE,
+      );
     }
 
     await this.cacheManager.del(this.userCacheKey(userId));
@@ -201,6 +216,6 @@ export class UsersService {
   }
 
   userCacheKey(userId: string) {
-    return `user:${userId}`;
+    return CACHE_KEYS.USER(userId);
   }
 }

@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
+import { ERROR_MESSAGES } from '@common/constants/error.constants';
 
 @Injectable()
 export class AvatarFileValidationPipe implements PipeTransform<
@@ -11,7 +12,7 @@ export class AvatarFileValidationPipe implements PipeTransform<
 
   transform(file: Express.Multer.File): Express.Multer.File {
     if (!file) {
-      throw new BadRequestException('File is required');
+      throw new BadRequestException(ERROR_MESSAGES.FILE_REQUIRED);
     }
 
     if (!this.allowedMimeTypes.includes(file.mimetype)) {
@@ -21,7 +22,7 @@ export class AvatarFileValidationPipe implements PipeTransform<
     }
 
     if (file.size > this.maxSizeInBytes) {
-      throw new BadRequestException('File is too large. Max size is 5MB');
+      throw new BadRequestException(ERROR_MESSAGES.FILE_TOO_LARGE_MAX_5MB);
     }
 
     return file;
