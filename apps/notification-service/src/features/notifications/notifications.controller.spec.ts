@@ -50,18 +50,19 @@ describe('NotificationsController', () => {
   });
 
   describe('handlePaymentCreated', () => {
-    it('should delegate payment event to notifications service', () => {
+    it('should delegate payment event to notifications service', async () => {
       const payload = {
         fromUserId: 'user-1',
         toUserId: 'user-2',
         amount: 100,
       };
 
-      controller.handlePaymentCreated(payload);
+      await controller.handlePaymentCreated(payload);
 
       expect(
         mockNotificationsService.handlePaymentCreated,
       ).toHaveBeenCalledTimes(1);
+
       expect(
         mockNotificationsService.handlePaymentCreated,
       ).toHaveBeenCalledWith(payload);

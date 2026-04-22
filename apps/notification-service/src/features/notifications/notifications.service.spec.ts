@@ -10,12 +10,37 @@ describe('NotificationsService', () => {
     sendNotification: jest.fn(),
   };
 
+  const saveMock = jest.fn<
+    Promise<{
+      _id: string;
+      title: string;
+      data: PaymentsCreatedEventDto;
+    }>,
+    []
+  >();
+
+  type NotificationModelPayload = {
+    title: string;
+    data: PaymentsCreatedEventDto;
+  };
+
+  const notificationModelMock = jest
+    .fn()
+    .mockImplementation((dto: NotificationModelPayload) => ({
+      ...dto,
+      save: saveMock,
+    }));
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NotificationsService,
+        {
+          provide: 'NOTIFICATION_MODEL',
+          useValue: notificationModelMock,
+        },
         {
           provide: NotificationsGateway,
           useValue: mockNotificationsGateway,
@@ -31,20 +56,23 @@ describe('NotificationsService', () => {
   });
 
   describe('handlePaymentCreated', () => {
-    it('should send notification to sender and recipient', () => {
+    it('should send notification to sender and recipient and save notification', async () => {
       const event: PaymentsCreatedEventDto = {
         fromUserId: 'user-1',
         toUserId: 'user-2',
         amount: 100,
       };
 
-      const consoleSpy = jest
-        .spyOn(console, 'log')
-        .mockImplementation(() => undefined);
+      const savedNotification = {
+        _id: 'notification-id',
+        title: 'Payment Received',
+        data: event,
+      };
 
-      service.handlePaymentCreated(event);
+      saveMock.mockResolvedValue(savedNotification);
 
-      expect(consoleSpy).toHaveBeenCalledWith('payment event', event);
+      const result = await service.handlePaymentCreated(event);
+
       expect(mockNotificationsGateway.sendNotification).toHaveBeenCalledTimes(
         2,
       );
@@ -58,6 +86,15 @@ describe('NotificationsService', () => {
         'user-2',
         event,
       );
+
+      expect(notificationModelMock).toHaveBeenCalledTimes(1);
+      expect(notificationModelMock).toHaveBeenCalledWith({
+        title: 'Payment Received',
+        data: event,
+      });
+
+      expect(saveMock).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(savedNotification);
     });
   });
 });

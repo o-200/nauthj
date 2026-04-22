@@ -18,6 +18,6 @@ export class NotificationsController {
 
   @EventPattern('payments.created')
   handlePaymentCreated(@Payload() data: PaymentsCreatedEventDto) {
-    this.notificationService.handlePaymentCreated(data);
+    return this.notificationService.handlePaymentCreated(data);
   }
 }

@@ -6,9 +6,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtVerifyService } from '@common/common/auth/jwt.service';
 import { NotificationsController } from './notifications.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { DatabasesModule } from '../../providers/databases/databases.module';
+import { NotificationProviders } from '../../providers/databases/database_providers/notification.providers';
 
 @Module({
   imports: [
+    DatabasesModule,
     ClientsModule.register([
       {
         name: 'NOTIFICATION_SERVICE',
@@ -33,6 +36,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     }),
   ],
   controllers: [NotificationsController],
-  providers: [NotificationsService, NotificationsGateway, JwtVerifyService],
+  providers: [
+    NotificationsService,
+    NotificationsGateway,
+    JwtVerifyService,
+    ...NotificationProviders,
+  ],
 })
 export class NotificationsModule {}
