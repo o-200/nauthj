@@ -12,6 +12,7 @@ describe('NotificationsController', () => {
 
   const mockNotificationsService = {
     handlePaymentCreated: jest.fn(),
+    findAll: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -66,6 +67,22 @@ describe('NotificationsController', () => {
       expect(
         mockNotificationsService.handlePaymentCreated,
       ).toHaveBeenCalledWith(payload);
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return all notifications from service', async () => {
+      const notifications = [
+        { _id: 'n1', title: 'Payment Received', data: { amount: 1 } },
+        { _id: 'n2', title: 'Payment Received', data: { amount: 2 } },
+      ];
+
+      mockNotificationsService.findAll.mockResolvedValue(notifications);
+
+      const result = await controller.findAll();
+
+      expect(mockNotificationsService.findAll).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(notifications);
     });
   });
 });

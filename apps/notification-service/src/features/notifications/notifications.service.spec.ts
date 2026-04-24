@@ -30,6 +30,10 @@ describe('NotificationsService', () => {
       ...dto,
       save: saveMock,
     }));
+  const findExecMock = jest.fn();
+  notificationModelMock.find = jest.fn(() => ({
+    exec: findExecMock,
+  }));
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -95,6 +99,23 @@ describe('NotificationsService', () => {
 
       expect(saveMock).toHaveBeenCalledTimes(1);
       expect(result).toEqual(savedNotification);
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return all notifications', async () => {
+      const notifications = [
+        { _id: 'n1', title: 'Payment Received', data: { amount: 1 } },
+        { _id: 'n2', title: 'Payment Received', data: { amount: 2 } },
+      ];
+
+      findExecMock.mockResolvedValue(notifications);
+
+      const result = await service.findAll();
+
+      expect(notificationModelMock.find).toHaveBeenCalledTimes(1);
+      expect(findExecMock).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(notifications);
     });
   });
 });

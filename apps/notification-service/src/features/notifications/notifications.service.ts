@@ -25,4 +25,8 @@ export class NotificationsService {
 
     return notification.save();
   }
+
+  findAll(): Promise<Notification[]> {
+    return this.notificationModel.find().exec();
+  }
 }
