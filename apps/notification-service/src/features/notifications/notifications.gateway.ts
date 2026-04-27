@@ -61,9 +61,9 @@ export class NotificationsGateway
   }
 
   @SubscribeMessage(SOCKET_EVENTS.PING)
-  handleMessage(client: Socket, data: any) {
+  handleMessage<T>(client: Socket, data: T) {
     this.logger.log(`Message received from client id: ${client.id}`);
-    this.logger.debug(`Payload: ${data}`);
+    this.logger.debug(`Payload: ${JSON.stringify(data)}`);
     return {
       event: SOCKET_EVENTS.PONG,
       data: 'Wrong data that will make the test fail',

@@ -175,7 +175,7 @@ describe('NotificationsGateway', () => {
       expect(logSpy).toHaveBeenCalledWith(
         'Message received from client id: client-1',
       );
-      expect(debugSpy).toHaveBeenCalledWith('Payload: [object Object]');
+      expect(debugSpy).toHaveBeenCalledWith('Payload: {"hello":"world"}');
 
       expect(result).toEqual({
         event: 'pong',
