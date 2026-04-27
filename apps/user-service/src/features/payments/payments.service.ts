@@ -90,6 +90,8 @@ export class PaymentsService {
         amount_cents: amountCents.toString(),
       });
 
+      const savedPayment = await paymentRepository.save(payment);
+
       const paymentEvent: PaymentsCreatedEventDto = {
         fromUserId: sender.id,
         toUserId: recipient.id,
@@ -98,7 +100,7 @@ export class PaymentsService {
 
       this.paymentService.emit(KAFKA_TOPICS.PAYMENTS_CREATED, paymentEvent);
 
-      return paymentRepository.save(payment);
+      return savedPayment;
     });
   }
 }
