@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { Notification } from './interfaces/notification.interface';
 import { INJECTION_TOKENS } from '@common/constants/tokens.constants';
 import { NOTIFICATION_TITLES } from '@common/constants/events.constants';
+import { notificationDto } from './dto/notification.dto';
 
 @Injectable()
 export class NotificationsService {
@@ -15,8 +16,14 @@ export class NotificationsService {
   ) {}
 
   handlePaymentCreated(data: PaymentsCreatedEventDto) {
-    this.notificationsGateway.sendNotification(data.fromUserId, data);
-    this.notificationsGateway.sendNotification(data.toUserId, data);
+    this.notificationsGateway.sendNotification({
+      userId: data.fromUserId,
+      data: data,
+    });
+    this.notificationsGateway.sendNotification({
+      userId: data.toUserId,
+      data: data,
+    });
 
     const notification = new this.notificationModel({
       title: NOTIFICATION_TITLES.PAYMENT_RECEIVED,

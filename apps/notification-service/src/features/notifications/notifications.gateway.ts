@@ -13,6 +13,7 @@ import { SocketData } from './common/socket.data';
 import { JwtVerifyService } from '@common/common/auth/jwt.service';
 import { ERROR_MESSAGES } from '@common/constants/error.constants';
 import { SOCKET_EVENTS } from '@common/constants/events.constants';
+import { notificationDto } from './dto/notification.dto';
 
 @WebSocketGateway()
 export class NotificationsGateway
@@ -70,8 +71,12 @@ export class NotificationsGateway
     };
   }
 
-  sendNotification<T>(userId: string, data: T) {
-    this.logger.debug(`Sending notification to user id: ${userId}`);
-    this.io.to(userId).emit(SOCKET_EVENTS.NOTIFICATION, { data: data });
+  sendNotification<T>(notification: notificationDto<T>) {
+    this.logger.debug(
+      `Sending notification to user id: ${notification.userId}`,
+    );
+    this.io
+      .to(notification.userId)
+      .emit(SOCKET_EVENTS.NOTIFICATION, { data: notification.data });
   }
 }

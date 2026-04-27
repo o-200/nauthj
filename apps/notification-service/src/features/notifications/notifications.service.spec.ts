@@ -82,13 +82,18 @@ describe('NotificationsService', () => {
       );
       expect(mockNotificationsGateway.sendNotification).toHaveBeenNthCalledWith(
         1,
-        'user-1',
-        event,
+        {
+          userId: 'user-1',
+          data: event,
+        },
       );
+
       expect(mockNotificationsGateway.sendNotification).toHaveBeenNthCalledWith(
         2,
-        'user-2',
-        event,
+        {
+          userId: 'user-2',
+          data: event,
+        },
       );
 
       expect(notificationModelMock).toHaveBeenCalledTimes(1);

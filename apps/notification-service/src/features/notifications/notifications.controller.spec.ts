@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsGateway } from './notifications.gateway';
 import { NotificationsService } from './notifications.service';
+import { notificationDto } from './dto/notification.dto';
 
 describe('NotificationsController', () => {
   let controller: NotificationsController;
@@ -41,12 +42,15 @@ describe('NotificationsController', () => {
 
   describe('sendNotification', () => {
     it('should send notification through gateway', () => {
-      const body = { userId: 'user-123' };
+      const body: notificationDto<{ message: string }> = {
+        userId: 'user-123',
+        data: { message: 'hello' },
+      };
 
       controller.sendNotification(body);
 
       expect(mockGateway.sendNotification).toHaveBeenCalledTimes(1);
-      expect(mockGateway.sendNotification).toHaveBeenCalledWith('user-123', {});
+      expect(mockGateway.sendNotification).toHaveBeenCalledWith(body);
     });
   });
 

@@ -196,7 +196,7 @@ describe('NotificationsGateway', () => {
         to,
       } as unknown as Server;
 
-      gateway.sendNotification('user-123', 'hello!');
+      gateway.sendNotification({ userId: 'user-123', data: 'hello!' });
 
       expect(debugSpy).toHaveBeenCalledWith(
         'Sending notification to user id: user-123',

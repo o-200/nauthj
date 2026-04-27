@@ -5,6 +5,7 @@ import { NotificationsService } from './notifications.service';
 import { PaymentsCreatedEventDto } from '@common/common/events/interfaces/payments.created';
 import { KAFKA_TOPICS } from '@common/constants/kafka.constants';
 import { Notification } from './interfaces/notification.interface';
+import { notificationDto } from './dto/notification.dto';
 
 @Controller('notifications')
 export class NotificationsController {
@@ -14,8 +15,8 @@ export class NotificationsController {
   ) {}
 
   @Post()
-  sendNotification(@Body() body: { userId: string }) {
-    this.notificationsGateway.sendNotification(body.userId, {});
+  sendNotification<T>(@Body() body: notificationDto<T>) {
+    this.notificationsGateway.sendNotification(body);
   }
 
   @EventPattern(KAFKA_TOPICS.PAYMENTS_CREATED)
