@@ -5,7 +5,6 @@ import { Model } from 'mongoose';
 import { Notification } from './interfaces/notification.interface';
 import { INJECTION_TOKENS } from '@common/constants/tokens.constants';
 import { NOTIFICATION_TITLES } from '@common/constants/events.constants';
-import { notificationDto } from './dto/notification.dto';
 
 @Injectable()
 export class NotificationsService {

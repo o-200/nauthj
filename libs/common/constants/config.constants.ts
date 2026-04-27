@@ -4,6 +4,7 @@ export const CONFIG_NAMESPACES = {
   DATABASE: 'database',
   FILE_STORAGE: 'fileStorage',
   JWT: 'jwt',
+  KAFKA: 'kafka',
 } as const;
 
 export const CONFIG_KEYS = {
@@ -13,6 +14,7 @@ export const CONFIG_KEYS = {
   DATABASE: CONFIG_NAMESPACES.DATABASE,
   FILE_STORAGE: CONFIG_NAMESPACES.FILE_STORAGE,
   JWT_SECRET: `${CONFIG_NAMESPACES.JWT}.secret`,
+  KAFKA_BROKERS: `${CONFIG_NAMESPACES.KAFKA}.brokers`,
 } as const;
 
 export const ENV_KEYS = {
@@ -36,4 +38,5 @@ export const ENV_KEYS = {
   MONGO_DB: 'MONGO_DB',
   NAUTHJ_PORT: 'NAUTHJ_PORT',
   NOTIFICATION_SERVICE_PORT: 'NOTIFICATION_SERVICE_PORT',
+  KAFKA_BROKERS: 'KAFKA_BROKERS',
 } as const;

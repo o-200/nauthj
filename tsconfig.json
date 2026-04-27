@@ -15,21 +15,13 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@common/common": [
-        "libs/common/src"
-      ],
-      "@common/common/*": [
-        "libs/common/src/*"
-      ],
-      "@common/constants": [
-        "libs/common/constants"
-      ],
-      "@common/constants/*": [
-        "libs/common/constants/*"
-      ],
-      "src/*": [
-        "src/*"
-      ]
+      "@common/common": ["libs/common/src"],
+      "@common/common/*": ["libs/common/src/*"],
+      "@common/constants": ["libs/common/constants"],
+      "@common/constants/*": ["libs/common/constants/*"],
+      "@common/config": ["libs/common/config"],
+      "@common/config/*": ["libs/common/config/*"],
+      "src/*": ["src/*"],
     },
     "incremental": true,
     "skipLibCheck": true,
@@ -37,6 +29,6 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
-  }
+    "noFallthroughCasesInSwitch": false,
+  },
 }
