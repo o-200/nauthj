@@ -12,8 +12,8 @@ export class CreatePaymentDto {
   recipientId: string;
 
   @ApiProperty({
-    example: 1500,
-    description: 'Amount in cents',
+    example: 15,
+    description: 'Amount',
     minimum: 1,
   })
   @Transform(({ value }) => Number(value))
