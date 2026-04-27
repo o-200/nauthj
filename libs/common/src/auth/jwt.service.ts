@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from 'apps/nauthj/src/features/auth/common/interfaces/jwt.payload';
+import { JwtPayload } from 'apps/user-service/src/features/auth/common/interfaces/jwt.payload';
 import { ERROR_MESSAGES } from '@common/constants/error.constants';
 import { AUTH_SCHEMES } from '@common/constants/events.constants';
 

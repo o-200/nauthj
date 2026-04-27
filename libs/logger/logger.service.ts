@@ -3,7 +3,7 @@ import { LogContext } from './interfaces/log-context';
 
 @Injectable()
 export class ApplicationLogger implements LoggerService {
-  private readonly defaultContext = 'Nauthj';
+  private readonly defaultContext = 'user-service';
 
   isLevelEnabled(level: LogLevel): boolean {
     return Logger.isLevelEnabled(level);

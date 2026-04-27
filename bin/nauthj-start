@@ -1,1 +1,1 @@
-docker compose up -d && nest start nauthj
+docker compose up -d && nest start user-service
