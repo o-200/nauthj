@@ -43,7 +43,6 @@ export class NotificationsGateway
       if (!authHeader) {
         throw new Error(ERROR_MESSAGES.NO_AUTHORIZATION_HEADER);
       }
-      console.log(authHeader);
       client.data.userId = await this.jwtVerifyService.verify(authHeader);
     } catch {
       client.disconnect();
